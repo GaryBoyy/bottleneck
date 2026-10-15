@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bottleneck</title>
+<meta name="description" content="An investing journal on the companies behind the AI buildout, and the economy around them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&display=swap">
+<style>
+/* Layout: a component datasheet for one portfolio. Tickers set like part numbers,
+   spec tables in stock posts, hairline rules, and a single cobalt line. */
+:root{
+  --bg:#F4F5F7;
+  --surface:#FFFFFF;
+  --surface-2:#F8F9FB;
+  --ink:#10141B;
+  --ink-2:#39404C;
+  --muted:#646C7A;
+  --faint:#8A919D;
+  --rule:#DFE2E8;
+  --rule-2:#C9CED6;
+  --grid:#E9ECF0;
+  --accent:#2448D8;
+  --accent-ink:#1E3CB8;
+  --accent-wash:#E9EDFC;
+  --up:#11744A;
+  --down:#B4382A;
+  --ctx-1:#565E6B;
+  --ctx-2:#8F96A1;
+  --cash:#BAC0C9;
+  --head-bg:rgba(244,245,247,.88);
+  --shadow:0 6px 18px rgba(16,20,27,.10);
+
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --maxw:1120px;
+  --readw:700px;
+  --gutter:clamp(16px,4vw,32px);
+  --radius:6px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1015; --surface:#151920; --surface-2:#11151B;
+    --ink:#E9ECF1; --ink-2:#C3C9D2; --muted:#8E96A3; --faint:#6B7380;
+    --rule:#252B34; --rule-2:#353C47; --grid:#1F242C;
+    --accent:#7F9BFF; --accent-ink:#9DB2FF; --accent-wash:#1A2140;
+    --up:#4CC38A; --down:#F07A6A;
+    --ctx-1:#A3AAB6; --ctx-2:#5D6572; --cash:#3A414C;
+    --head-bg:rgba(13,16,21,.86);
+    --shadow:0 8px 22px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1015; --surface:#151920; --surface-2:#11151B;
+  --ink:#E9ECF1; --ink-2:#C3C9D2; --muted:#8E96A3; --faint:#6B7380;
+  --rule:#252B34; --rule-2:#353C47; --grid:#1F242C;
+  --accent:#7F9BFF; --accent-ink:#9DB2FF; --accent-wash:#1A2140;
+  --up:#4CC38A; --down:#F07A6A;
+  --ctx-1:#A3AAB6; --ctx-2:#5D6572; --cash:#3A414C;
+  --head-bg:rgba(13,16,21,.86);
+  --shadow:0 8px 22px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--f-body);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+[hidden]{display:none!important}
+a{color:inherit}
+button{font:inherit;color:inherit}
+::selection{background:var(--accent);color:var(--surface)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--gutter)}
+
+/* ---------- Type roles ---------- */
+.label{
+  font-family:var(--f-display);font-size:.75rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+}
+.meta{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0;
+  font-family:var(--f-display);font-size:.8125rem;color:var(--muted);
+}
+.meta .cat{font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.75rem;color:var(--ink-2)}
+.meta .sep{width:3px;height:3px;border-radius:50%;background:var(--faint)}
+.chip{
+  display:inline-block;font-family:var(--f-mono);font-size:.75rem;font-weight:500;
+  letter-spacing:.02em;line-height:1;color:var(--ink-2);
+  padding:5px 6px 4px;border:1px solid var(--rule-2);border-radius:3px;background:var(--surface);
+  text-decoration:none;white-space:nowrap;
+}
+a.chip:hover{border-color:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.up{color:var(--up)} .down{color:var(--down)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Header ---------- */
+.site-head{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:var(--head-bg);-webkit-backdrop-filter:saturate(1.4) blur(10px);backdrop-filter:saturate(1.4) blur(10px);
+  border-bottom:1px solid var(--rule);
+}
+.head-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:58px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.mark{width:20px;height:20px;fill:var(--accent);flex:none}
+.brand-name{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:1.25rem;letter-spacing:-.01em}
+.nav{display:flex;gap:4px}
+.nav a{
+  font-family:var(--f-display);font-size:.9375rem;font-weight:600;text-decoration:none;color:var(--muted);
+  padding:18px 10px 16px;border-bottom:2px solid transparent;transition:color .15s ease,border-color .15s ease;
+}
+.nav a:hover{color:var(--ink)}
+.nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+main{min-height:70vh}
+.view{padding-block:36px 72px}
+
+/* ---------- Journal: lead ---------- */
+.about{margin:0 0 28px;font-size:1.0625rem;color:var(--muted);max-width:60ch}
+.lead{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:32px;align-items:start;margin-bottom:56px}
+.latest{min-width:0;padding-top:4px}
+.latest .meta{margin-bottom:14px}
+.latest .meta .new{color:var(--accent-ink)}
+.latest-title{
+  margin:0 0 14px;font-family:var(--f-display);font-stretch:80%;font-weight:720;
+  font-size:clamp(2.125rem,1.35rem + 3.1vw,3.5rem);line-height:1.02;letter-spacing:-.018em;text-wrap:balance;
+}
+.latest-title a{text-decoration:none}
+.latest-title a:hover{color:var(--accent-ink)}
+.latest .dek{margin:0 0 18px;font-size:1.3125rem;line-height:1.45;color:var(--ink-2);max-width:40ch}
+.latest .row{display:flex;flex-wrap:wrap;align-items:center;gap:14px 18px}
+.more{
+  font-family:var(--f-display);font-weight:600;font-size:.9375rem;color:var(--accent-ink);text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.more:hover{text-decoration:underline;text-underline-offset:3px}
+
+.snapshot{
+  min-width:0;background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:20px 20px 18px;
+}
+.snapshot .label{display:flex;justify-content:space-between;gap:8px;margin:0 0 14px}
+.kpis{margin:0;display:grid;gap:16px}
+.kpi{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:2px 12px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.kpi:last-child{border-bottom:0;padding-bottom:0}
+.kpi dt{font-family:var(--f-display);font-size:.875rem;font-weight:600;color:var(--ink-2)}
+.kpi .v{margin:0;font-family:var(--f-display);font-weight:650;font-size:1.75rem;line-height:1;letter-spacing:-.01em}
+.kpi .cap{margin:0;grid-column:1 / -1;font-family:var(--f-display);font-size:.8125rem;color:var(--muted)}
+.spark{display:block;width:100%;height:36px;margin:6px 0 0;grid-column:1 / -1}
+.snapshot .more{margin-top:16px}
+
+/* ---------- Journal: archive ---------- */
+.archive-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--ink)}
+.section-title{margin:0;font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:1.75rem;letter-spacing:-.01em;line-height:1}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--surface);padding:3px;gap:2px}
+.seg button{
+  border:0;background:transparent;cursor:pointer;border-radius:4px;
+  font-family:var(--f-display);font-size:.875rem;font-weight:600;color:var(--muted);padding:6px 11px;
+  transition:background .15s ease,color .15s ease;
+}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.search input{
+  width:220px;font-family:var(--f-display);font-size:.875rem;color:var(--ink);
+  background:var(--surface);border:1px solid var(--rule-2);border-radius:var(--radius);padding:8px 12px;
+}
+.search input::placeholder{color:var(--faint)}
+.search input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.active-filter{display:flex;align-items:center;gap:10px;margin-top:16px;font-family:var(--f-display);font-size:.875rem;color:var(--ink-2)}
+.clear{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  font-family:var(--f-mono);font-size:.75rem;font-weight:600;color:var(--accent-ink);
+  border:1px solid var(--accent);background:var(--accent-wash);border-radius:3px;padding:4px 8px;
+}
+.month{margin-top:28px}
+.month-h{
+  margin:0;display:flex;align-items:center;gap:12px;
+  font-family:var(--f-display);font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+}
+.month-h::after{content:"";flex:1;height:1px;background:var(--rule)}
+.item{
+  display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:6px 20px;align-items:start;
+  padding:18px 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit;
+}
+.item:last-child{border-bottom:0}
+.item .d{font-family:var(--f-mono);font-size:.8125rem;color:var(--muted);padding-top:5px}
+.item .cat{display:block;margin-bottom:4px}
+.item .ttl{
+  margin:0 0 4px;font-family:var(--f-display);font-stretch:90%;font-weight:650;font-size:1.25rem;line-height:1.2;letter-spacing:-.005em;
+  text-wrap:balance;transition:color .15s ease;
+}
+.item .dk{margin:0;font-size:1rem;line-height:1.45;color:var(--ink-2);max-width:62ch}
+.item .tk{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:200px;padding-top:4px}
+.item:hover .ttl{color:var(--accent-ink)}
+.item:focus-visible{outline-offset:4px}
+.empty{padding:48px 0;text-align:center;font-family:var(--f-display);color:var(--muted)}
+.link-btn{border:0;background:none;padding:0;cursor:pointer;color:var(--accent-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- Post ---------- */
+.read{max-width:calc(var(--readw) + 2 * var(--gutter))}
+.back{
+  display:inline-flex;align-items:center;gap:6px;margin-bottom:28px;
+  font-family:var(--f-display);font-weight:600;font-size:.875rem;color:var(--muted);text-decoration:none;
+}
+.back:hover{color:var(--ink)}
+.post-title{
+  margin:14px 0 16px;font-family:var(--f-display);font-stretch:80%;font-weight:720;
+  font-size:clamp(2.125rem,1.4rem + 3vw,3.375rem);line-height:1.03;letter-spacing:-.018em;text-wrap:balance;
+}
+.post-dek{margin:0 0 28px;font-size:1.3125rem;line-height:1.45;color:var(--ink-2);text-wrap:pretty}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin:0 0 32px}
+.spec{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;min-width:0}
+.spec-head{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 16px;
+  background:var(--surface-2);border-bottom:1px solid var(--rule);
+}
+.spec-t{font-family:var(--f-mono);font-weight:600;font-size:.9375rem;color:var(--accent-ink);letter-spacing:.02em}
+.spec-n{font-family:var(--f-display);font-weight:650;font-size:1rem;color:var(--ink)}
+.spec-l{margin-left:auto;font-family:var(--f-display);font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.spec-rows{margin:0;padding:6px 16px 8px}
+.spec-rows div{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule-2)}
+.spec-rows div:last-child{border-bottom:0}
+.spec-rows dt{font-family:var(--f-mono);font-size:.6875rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.spec-rows dd{margin:0;font-family:var(--f-display);font-size:.9375rem;line-height:1.4;color:var(--ink)}
+
+.prose{font-size:1.1875rem;line-height:1.66;color:var(--ink)}
+.prose > *{max-width:68ch}
+.prose p{margin:0 0 1.05em}
+.prose h3{
+  margin:1.9em 0 .55em;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:1.1875rem;line-height:1.25;letter-spacing:-.005em;
+}
+.prose h3:first-child{margin-top:0}
+.prose strong{font-weight:600}
+.prose ul,.prose ol{margin:0 0 1.15em;padding-left:1.4em}
+.prose li{margin:0 0 .5em;padding-left:.2em}
+.prose ul{list-style:none;padding-left:1.25em}
+.prose ul li{position:relative}
+.prose ul li::before{content:"";position:absolute;left:-1.05em;top:.62em;width:6px;height:6px;background:var(--accent);border-radius:1px}
+.prose ol li::marker{font-family:var(--f-mono);font-size:.85em;color:var(--accent-ink)}
+.post-foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--rule)}
+.post-foot .chips{margin-bottom:24px}
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pager a{
+  display:block;min-width:0;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--surface);
+  text-decoration:none;transition:border-color .15s ease;
+}
+.pager a:hover{border-color:var(--accent)}
+.pager .dir{display:block;margin-bottom:4px}
+.pager .pt{display:block;font-family:var(--f-display);font-weight:650;font-size:1rem;line-height:1.3;color:var(--ink)}
+.pager .next{text-align:right;grid-column:2}
+
+/* ---------- Portfolio ---------- */
+.page-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px;margin-bottom:24px}
+.page-title{margin:0;font-family:var(--f-display);font-stretch:80%;font-weight:720;font-size:clamp(2.125rem,1.5rem + 2.4vw,3rem);line-height:1;letter-spacing:-.018em}
+.asof{margin:0;font-family:var(--f-display);font-size:.875rem;color:var(--muted)}
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);margin-bottom:20px;
+}
+.tile{padding:18px 20px;border-left:1px solid var(--rule);min-width:0}
+.tile:first-child{border-left:0}
+.tile .label{display:block;margin-bottom:10px}
+.tile .v{display:block;font-family:var(--f-display);font-weight:650;font-size:clamp(1.75rem,1.3rem + 1.4vw,2.375rem);line-height:1;letter-spacing:-.015em}
+.tile .cap{display:block;margin-top:8px;font-family:var(--f-display);font-size:.8125rem;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);padding:20px;margin-bottom:20px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
+.card-title{margin:0;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:1.25rem;letter-spacing:-.005em}
+.card-sub{margin:4px 0 0;font-family:var(--f-display);font-size:.8125rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0;padding:0;list-style:none;font-family:var(--f-display);font-size:.8125rem;color:var(--ink-2)}
+.legend li{display:inline-flex;align-items:center;gap:8px}
+.key{display:inline-block;width:16px;height:2px;border-radius:1px}
+.chart{position:relative;outline:none}
+.chart:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--f-display)}
+.tip{
+  position:absolute;pointer-events:none;z-index:2;min-width:150px;
+  background:var(--surface);border:1px solid var(--rule-2);border-radius:var(--radius);
+  padding:10px 12px;font-family:var(--f-display);font-size:.8125rem;box-shadow:var(--shadow);
+}
+.tip .td{margin:0 0 6px;color:var(--muted);font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.tip .tr{display:flex;align-items:center;gap:8px;margin-top:3px}
+.tip .tv{font-weight:650;color:var(--ink);font-variant-numeric:tabular-nums;min-width:58px}
+.tip .tl{color:var(--muted)}
+.table-wrap{overflow-x:auto;margin-top:18px;border-top:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%}
+.monthly{min-width:640px;font-family:var(--f-display);font-size:.8125rem}
+.monthly th,.monthly td{padding:9px 8px;text-align:right;white-space:nowrap}
+.monthly th{font-weight:600;color:var(--muted);font-size:.75rem;letter-spacing:.04em}
+.monthly th:first-child,.monthly td:first-child{text-align:left;padding-left:0}
+.monthly td{font-variant-numeric:tabular-nums;border-top:1px solid var(--rule)}
+.monthly td:first-child{font-weight:600;color:var(--ink-2)}
+.monthly .ytd{font-weight:650}
+.monthly tr.main td{font-weight:650}
+
+.alloc{display:grid;gap:4px}
+.arow{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr) 56px;gap:16px;align-items:center;padding:9px 0;border-bottom:1px solid var(--rule)}
+.arow:last-child{border-bottom:0}
+.aname{font-family:var(--f-display);font-weight:600;font-size:.9375rem;color:var(--ink);min-width:0}
+.atk{display:block;margin-top:2px;font-family:var(--f-mono);font-size:.6875rem;color:var(--muted);letter-spacing:.02em}
+.abar{height:10px;background:transparent;position:relative}
+.abar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0 3px 3px 0}
+.arow.cash .abar i{background:var(--cash)}
+.aval{font-family:var(--f-display);font-weight:650;font-size:.9375rem;text-align:right;font-variant-numeric:tabular-nums}
+
+.hold-wrap{overflow-x:auto}
+.holdings{font-family:var(--f-display);font-size:.875rem;min-width:560px}
+.holdings th{
+  text-align:left;padding:0 10px 10px;border-bottom:1px solid var(--ink);
+  font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;
+}
+.holdings th.r,.holdings td.r{text-align:right}
+.holdings th button{border:0;background:none;padding:0;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+.holdings th button:hover,.holdings th button[aria-pressed="true"]{color:var(--ink)}
+.holdings th button[aria-pressed="true"]::after{content:" \2193"}
+.holdings td{padding:11px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+.holdings tbody tr{cursor:pointer;transition:background .12s ease}
+.holdings tbody tr:hover{background:var(--surface-2)}
+.holdings tbody tr:hover .tkr{color:var(--accent-ink)}
+.holdings tr.cashrow{cursor:default}
+.holdings tr.cashrow:hover{background:transparent}
+.tkr{font-family:var(--f-mono);font-weight:600;font-size:.8125rem;letter-spacing:.02em;color:var(--ink)}
+.tkr a{text-decoration:none}
+.co{color:var(--ink)}
+.ly{color:var(--muted)}
+.wcell{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.wbar{width:84px;height:6px;position:relative;flex:none}
+.wbar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:0 2px 2px 0}
+.cashrow .wbar i{background:var(--cash)}
+.ret{font-weight:650;font-variant-numeric:tabular-nums}
+.note{margin:4px 0 0;font-family:var(--f-display);font-size:.8125rem;color:var(--muted);max-width:80ch}
+
+/* ---------- Footer ---------- */
+.site-foot{border-top:1px solid var(--rule)}
+.foot-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding-block:22px 28px;font-family:var(--f-display);font-size:.8125rem;color:var(--muted)}
+.foot-row strong{color:var(--ink-2);font-weight:650}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .lead{grid-template-columns:1fr;gap:28px}
+  .kpi-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tile:nth-child(3){border-left:0}
+  .tile:nth-child(n+3){border-top:1px solid var(--rule)}
+}
+@media (max-width:640px){
+  .view{padding-block:24px 56px}
+  .head-row{height:54px}
+  .nav a{padding:16px 8px 14px}
+  .archive-head{align-items:stretch}
+  .controls{width:100%}
+  .search{width:100%}
+  .search input{width:100%}
+  .item{grid-template-columns:minmax(0,1fr);gap:4px}
+  .item .d{padding-top:0;order:-1}
+  .item .tk{justify-content:flex-start;max-width:none;padding-top:6px}
+  .latest .dek,.post-dek{font-size:1.1875rem}
+  .prose{font-size:1.125rem}
+  .spec-rows div{grid-template-columns:1fr;gap:2px}
+  .arow{grid-template-columns:minmax(0,1fr) 52px;gap:6px 12px}
+  .abar{grid-column:1 / -1;grid-row:2}
+  .holdings .ly{display:none}
+  .holdings{min-width:0}
+  .holdings .wbar{display:none}
+  .holdings th,.holdings td{padding-left:6px;padding-right:6px}
+  .pager{grid-template-columns:1fr}
+  .pager .next{grid-column:1}
+  .card{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap head-row">
+    <a class="brand" href="#journal" aria-label="Bottleneck home">
+      <svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 2.5h14l-5.6 7.5L17 17.5H3l5.6-7.5z"/></svg>
+      <span class="brand-name">Bottleneck</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#journal" data-nav="journal">Journal</a>
+      <a href="#portfolio" data-nav="portfolio">Portfolio</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section id="view-journal" class="view" aria-label="Journal">
+    <div class="wrap">
+      <p class="about">An investing journal on the companies behind the AI buildout, and the economy around them.</p>
+      <div class="lead">
+        <article class="latest" id="latest"></article>
+        <aside class="snapshot" id="snapshot" aria-label="Account snapshot"></aside>
+      </div>
+      <div class="archive">
+        <div class="archive-head">
+          <h2 class="section-title">Archive</h2>
+          <div class="controls">
+            <div class="seg" role="group" aria-label="Filter posts by type" id="seg">
+              <button type="button" data-cat="all" aria-pressed="true">All</button>
+              <button type="button" data-cat="stock" aria-pressed="false">Stocks</button>
+              <button type="button" data-cat="markets" aria-pressed="false">Markets</button>
+              <button type="button" data-cat="research" aria-pressed="false">Research</button>
+              <button type="button" data-cat="portfolio" aria-pressed="false">Portfolio</button>
+            </div>
+            <label class="search"><span class="sr">Search posts</span><input id="q" type="search" placeholder="Search posts or tickers" autocomplete="off" spellcheck="false"></label>
+          </div>
+        </div>
+        <div class="active-filter" id="activeFilter" hidden></div>
+        <div id="list"></div>
+        <p class="empty" id="empty" hidden>No posts match. <button type="button" class="link-btn" id="clearAll">Clear filters</button></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-post" class="view" aria-label="Post" hidden>
+    <div class="wrap read" id="postRoot"></div>
+  </section>
+
+  <section id="view-portfolio" class="view" aria-label="Portfolio" hidden>
+    <div class="wrap" id="pfRoot"></div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap foot-row">
+    <span><strong>Bottleneck</strong> &middot; Percentages only, never dollar amounts.</span>
+    <span>A personal journal, not investment advice.</span>
+  </div>
+</footer>
+
+<script>
+/* Portfolio data as of the Oct 9, 2026 close. Returns are time-weighted, in percent, from Dec 31, 2025. */
+var ASOF = "2026-10-09";
+var SUMMARY = {sinceStart:35.9, ytd:84.0, spxYtd:14.1, smhYtd:67.5, cash:26.95, positions:16};
+var HOLDINGS = [{"t": "AAOI", "name": "Applied Optoelectronics", "layer": "Optics", "w": 11.0, "r": 1.48}, {"t": "AXTI", "name": "AXT Inc", "layer": "Optics", "w": 10.99, "r": 41.64}, {"t": "MRVL", "name": "Marvell Technology", "layer": "Chips & networking", "w": 9.21, "r": 12.44}, {"t": "MU", "name": "Micron Technology", "layer": "Memory & storage", "w": 5.51, "r": 330.14}, {"t": "ALAB", "name": "Astera Labs", "layer": "Chips & networking", "w": 5.49, "r": 229.17}, {"t": "SNDK", "name": "Sandisk", "layer": "Memory & storage", "w": 4.23, "r": 630.29}, {"t": "CRWV", "name": "CoreWeave", "layer": "Compute & sites", "w": 3.84, "r": 4.13}, {"t": "BE", "name": "Bloom Energy", "layer": "Power & cooling", "w": 3.75, "r": 4.35}, {"t": "VRT", "name": "Vertiv", "layer": "Power & cooling", "w": 3.25, "r": -18.25}, {"t": "SKHY", "name": "SK Hynix", "layer": "Memory & storage", "w": 3.17, "r": 17.84}, {"t": "PL", "name": "Planet Labs", "layer": "Defense, space & minerals", "w": 2.87, "r": -46.88}, {"t": "IREN", "name": "IREN", "layer": "Compute & sites", "w": 2.82, "r": -18.2}, {"t": "WULF", "name": "TeraWulf", "layer": "Compute & sites", "w": 2.76, "r": -34.76}, {"t": "POET", "name": "POET Technologies", "layer": "Optics", "w": 1.86, "r": -41.14}, {"t": "OSS", "name": "One Stop Systems", "layer": "Defense, space & minerals", "w": 1.29, "r": -53.12}, {"t": "UAMY", "name": "United States Antimony", "layer": "Defense, space & minerals", "w": 0.98, "r": -36.5}];
+var LAYERS = ["Optics","Chips & networking","Memory & storage","Compute & sites","Power & cooling","Defense, space & minerals"];
+var SERIES = {dates:["2025-12-31", "2026-01-02", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09"],acct:[0.0, 10.2, 13.0, 21.8, 22.2, 20.2, 24.2, 29.0, 27.3, 29.8, 28.7, 32.0, 33.4, 36.4, 38.7, 39.8, 36.1, 41.0, 44.5, 39.4, 33.7, 38.5, 44.4, 28.5, 23.7, 30.7, 31.8, 27.9, 29.3, 24.9, 26.0, 23.4, 27.6, 29.7, 27.1, 26.6, 29.1, 30.2, 29.7, 24.8, 26.6, 19.9, 24.3, 22.3, 18.3, 22.0, 24.3, 27.9, 24.7, 26.2, 32.3, 33.1, 31.9, 30.8, 24.1, 27.8, 29.5, 29.4, 22.5, 21.4, 14.0, 19.4, 20.4, 26.7, 27.8, 30.0, 37.0, 39.0, 46.4, 53.6, 56.0, 56.8, 59.7, 60.8, 62.3, 59.5, 64.6, 61.3, 67.5, 65.1, 57.6, 62.9, 68.0, 75.8, 76.6, 84.7, 89.4, 77.4, 81.2, 89.5, 86.5, 96.5, 93.8, 86.9, 76.8, 78.9, 86.4, 95.3, 95.7, 103.7, 108.7, 110.7, 110.0, 118.2, 127.0, 122.3, 120.7, 98.9, 110.3, 100.0, 97.7, 108.2, 108.7, 117.7, 111.0, 112.0, 118.4, 121.0, 107.9, 104.3, 108.4, 103.4, 109.2, 115.9, 105.2, 95.7, 99.1, 90.6, 93.2, 97.8, 94.8, 84.8, 90.2, 81.2, 66.4, 66.2, 69.7, 86.3, 81.9, 82.3, 66.0, 63.6, 50.2, 36.0, 60.0, 65.8, 80.1, 90.3, 87.4, 87.5, 95.0, 87.0, 88.8, 95.4, 95.6, 102.1, 109.3, 92.7, 88.4, 90.7, 87.6, 79.4, 83.6, 83.1, 84.3, 75.5, 77.2, 73.0, 74.3, 75.2, 83.5, 89.3, 87.9, 81.2, 83.1, 73.0, 72.0, 76.2, 81.3, 85.8, 93.0, 94.6, 89.9, 90.5, 92.0, 85.4, 89.4, 88.2, 92.4, 96.0, 96.6, 99.5, 95.2, 84.4, 84.0],spx:[0.0, 0.2, 0.8, 1.4, 1.1, 1.1, 1.8, 1.9, 1.7, 1.2, 1.4, 1.4, -0.7, 0.4, 1.0, 1.0, 1.5, 1.9, 1.9, 1.8, 1.4, 1.9, 1.1, 0.5, -0.7, 1.3, 1.7, 1.4, 1.4, -0.2, -0.1, -0.0, 0.5, 0.2, 0.9, -0.1, 0.7, 1.5, 0.9, 0.5, 0.5, -0.4, 0.3, -0.2, -1.5, -0.7, -0.9, -1.0, -2.5, -3.1, -2.1, -1.9, -3.2, -3.5, -5.0, -3.9, -4.2, -3.7, -5.4, -7.0, -7.3, -4.6, -4.0, -3.8, -3.4, -3.3, -0.9, -0.3, -0.4, 0.6, 1.8, 2.6, 2.9, 4.1, 3.9, 3.2, 4.3, 3.8, 4.7, 4.8, 4.3, 4.2, 5.3, 5.6, 5.2, 6.0, 7.6, 7.2, 8.1, 8.3, 8.1, 8.8, 9.6, 8.2, 8.1, 7.4, 8.6, 8.8, 9.2, 9.8, 9.9, 10.5, 10.7, 11.0, 11.2, 10.3, 10.8, 7.9, 8.2, 7.9, 6.2, 8.0, 8.6, 10.3, 9.7, 8.4, 9.6, 9.2, 7.6, 7.5, 7.5, 7.4, 8.7, 9.6, 9.3, 9.3, 10.1, 9.6, 9.3, 10.2, 10.7, 9.8, 10.2, 10.6, 10.1, 8.9, 8.7, 9.7, 9.6, 8.2, 8.3, 8.3, 8.5, 6.9, 8.7, 9.4, 11.0, 13.0, 12.8, 12.6, 13.3, 13.3, 12.9, 13.2, 13.9, 13.7, 13.1, 12.4, 12.6, 11.6, 12.1, 11.8, 12.2, 12.1, 12.9, 12.7, 12.3, 11.5, 12.0, 13.2, 12.8, 12.1, 11.6, 10.9, 11.8, 11.3, 10.8, 10.3, 11.6, 11.8, 13.4, 13.4, 12.6, 12.5, 13.1, 12.2, 12.1, 11.8, 12.0, 12.8, 13.6, 14.2, 14.0, 13.4, 14.1],smh:[0.0, 3.7, 4.8, 7.6, 6.9, 5.2, 8.1, 8.5, 8.7, 7.8, 10.1, 11.2, 8.4, 11.6, 11.8, 11.1, 10.7, 13.1, 15.7, 15.9, 12.0, 13.3, 10.4, 6.1, 5.8, 11.5, 12.9, 12.4, 15.2, 12.8, 13.2, 13.2, 14.6, 13.9, 15.2, 14.7, 16.4, 18.3, 14.4, 12.8, 12.8, 8.6, 10.8, 9.8, 5.7, 9.5, 10.3, 11.4, 7.8, 7.5, 9.4, 10.2, 9.3, 9.7, 6.8, 8.7, 9.6, 10.8, 5.8, 3.9, 0.7, 6.5, 8.8, 8.9, 9.9, 11.0, 17.4, 19.5, 21.3, 23.1, 25.5, 25.8, 26.3, 28.9, 28.8, 29.0, 32.4, 33.8, 40.6, 40.6, 36.4, 38.7, 40.7, 41.6, 40.7, 45.1, 52.7, 50.0, 57.3, 60.0, 55.9, 59.0, 60.6, 54.5, 51.7, 51.0, 56.8, 57.7, 60.0, 67.2, 65.4, 66.6, 66.3, 68.8, 75.5, 77.1, 74.2, 58.2, 66.1, 64.1, 58.5, 69.2, 72.2, 79.7, 71.0, 73.3, 83.2, 85.7, 72.7, 71.9, 76.8, 69.8, 75.5, 82.1, 72.3, 64.5, 67.8, 61.5, 64.7, 68.8, 69.7, 62.6, 66.7, 64.0, 58.0, 54.5, 55.2, 62.2, 63.0, 61.1, 55.8, 52.3, 47.1, 40.0, 49.6, 50.1, 51.5, 59.9, 58.2, 58.7, 61.8, 58.1, 59.1, 62.4, 63.6, 63.2, 65.0, 58.2, 55.8, 56.2, 55.6, 51.8, 54.3, 54.3, 59.1, 53.6, 54.6, 51.4, 52.9, 53.4, 57.5, 59.3, 59.5, 55.6, 57.9, 50.4, 50.5, 51.5, 55.7, 59.1, 65.5, 68.7, 67.0, 66.8, 68.4, 66.6, 68.5, 69.1, 71.5, 75.1, 76.0, 75.6, 73.6, 68.6, 67.5]};
+var MONTHLY = [["Jan", 33.7, 1.4, 12.0], ["Feb", -6.6, -0.9, 0.7], ["Mar", -4.3, -5.1, -5.7], ["Apr", 40.6, 10.4, 32.2], ["May", 25.1, 5.1, 18.2], ["Jun", 2.8, -1.1, 9.5], ["Jul", -23.2, -0.1, -17.6], ["Aug", 6.9, 2.6, 3.0], ["Sep", 6.2, -0.5, 9.4], ["Oct", -2.2, 2.1, -0.9]];
+</script>
+<script>
+/* Posts: March 18 to July 3, 2026 (tightened from the original journal) */
+var POSTS_A = [
+{
+  id:"p-2026-03-18-start", date:"2026-03-18", cat:"portfolio", tickers:[],
+  title:"Starting this journal",
+  dek:"Why I'm writing down my reasoning, and the rules I'll hold myself to.",
+  body:`<p>This journal is a record of why I make each investment decision, written before I know how it turns out. Looking back, I want to see whether I was right for the right reasons.</p>
+<p>The idea behind the account is simple. The biggest spending wave in tech is the buildout of computing for AI: chips, memory, networking, power and cooling. I don't know which AI model or app will win, and I don't need to. They all run on the same hardware, so that's what I own.</p>
+<p>The account has three parts:</p>
+<ul><li><strong>Core positions</strong> in companies that sit on a real bottleneck in that supply chain.</li><li><strong>Small speculative bets</strong> that can pay off big and cost little if they fail.</li><li><strong>A cash reserve</strong>, because the best prices usually show up on bad days.</li></ul>
+<p>Three rules for this journal. Every number is a percentage: position sizes are a share of the account, and results are gains or losses against cost. I'll post once or twice a week. And when a thesis breaks, I write that post too.</p>
+<p>None of this is advice. It's a notebook I'm keeping in public so I can't quietly rewrite it later.</p>`
+},
+{
+  id:"p-2026-03-21-aaoi", date:"2026-03-21", cat:"stock", tickers:["AAOI"],
+  title:"Why I bought AAOI",
+  dek:"A small optics maker with its own lasers, riding the data center upgrade cycle.",
+  spec:[{t:"AAOI", name:"Applied Optoelectronics", layer:"Optics", does:"Optical transceivers and the lasers inside them", move:"Bought Mar 20", watch:"Orders from the big cloud customers"}],
+  body:`<p>Applied Optoelectronics makes optical transceivers, the parts that turn electrical signals into light so data can move over fiber between servers and switches. Past a few meters, almost everything in a data center travels as light, and every link needs a transceiver at each end.</p>
+<p>AI multiplies the number of links. In a training cluster, thousands of chips trade data constantly, so the network becomes part of the computer. That's why networking keeps taking a bigger share of data center budgets, and why speeds keep jumping from 400G to 800G to 1.6T. Each jump forces buyers to replace modules. More volume plus a replacement cycle is a strong setup.</p>
+<p>AAOI is small, which is both the appeal and the risk. It makes its own lasers, the scarcest part of a transceiver. It has US factories at a time when buyers care where parts come from. A few big design wins would change its numbers a lot.</p>
+<p>The risks are real. A couple of customers make up most of its sales, prices fall with every product generation, and the stock has gone nowhere for long stretches before. There is no moat here, only a window.</p>
+<p>I bought a first lot this week and plan to add on weakness. If orders stall for two straight quarters, I'm out.</p>`
+},
+{
+  id:"p-2026-03-27-data-center-map", date:"2026-03-27", cat:"research", tickers:[],
+  title:"Where the money goes in an AI data center",
+  dek:"A rough map of the spending, and why the bottleneck keeps moving.",
+  body:`<p>Before adding more positions, I wanted a map of where the money goes when someone builds an AI data center.</p>
+<p>Roughly: the AI chips are the biggest line, about half or more of the equipment bill. Next is high-bandwidth memory, which ships with the chips but comes from a separate industry. Then networking: switches, cables and optical modules. Then storage. Then the building itself, with power gear, transformers and cooling.</p>
+<p>The useful pattern is that <strong>the bottleneck keeps moving</strong>. Whatever is scarce collects the profits. Money rushes in, capacity gets built, and the shortage moves to the next layer. First it was the chips, then advanced packaging, then memory. The next candidates look like optics and electrical power. The best trade is usually the next bottleneck, not the last one.</p>
+<p>Margins follow industry structure. Layers with two or three real suppliers keep pricing power. Layers with ten suppliers hand the value to their customers. When I size a position, structure matters as much as growth.</p>
+<p>So the plan is to own several layers instead of one, lean toward where the bottleneck is heading, and rotate as each shortage clears. It's also where this journal's name comes from.</p>`
+},
+{
+  id:"p-2026-03-30-three-buys", date:"2026-03-30", cat:"portfolio", tickers:["ALAB","IREN","CRWV"],
+  title:"Three buys: ALAB, IREN and CRWV",
+  dek:"Putting new cash to work after a pullback.",
+  body:`<p>I put a good chunk of cash to work today across three names, using new money I added to the account this month. Each gets its own post soon. This one covers why I bought them together and how I sized them.</p>
+<p>The reason was price. All three had pulled back into the entry ranges I wrote down in advance. When a price reaches the plan, I buy. I want buying to feel mechanical, because the days when good companies are cheap are the days buying feels worst.</p>
+<p>The three ideas are related but different:</p>
+<ul><li><strong>Astera Labs</strong> is a bet that every AI server needs more connectivity chips each generation, whoever makes the processor.</li><li><strong>IREN</strong> is a bet that access to electricity becomes the scarce thing.</li><li><strong>CoreWeave</strong> is a bet that demand to rent AI computing stays ahead of supply.</li></ul>
+<p>Astera is the core position because its business quality is the highest. The other two stay smaller because they carry debt and execution risk. Even after today, about a third of the account is cash.</p>
+<p>What would make today a mistake is a real slowdown in AI spending: actual budget cuts from the big builders, rather than a scary headline.</p>`
+},
+{
+  id:"p-2026-04-03-alab", date:"2026-04-03", cat:"stock", tickers:["ALAB"],
+  title:"Why I added to ALAB",
+  dek:"More connectivity chips in every AI server, whoever wins the processor race.",
+  spec:[{t:"ALAB", name:"Astera Labs", layer:"Chips & networking", does:"Connectivity chips inside AI servers", move:"Added Mar 30", watch:"Attach rates on new AI platforms"}],
+  body:`<p>Astera Labs designs connectivity chips for AI servers. Its main product is the retimer. As data speeds climb, electrical signals degrade over shorter distances, so past a few inches of circuit board they have to be cleaned up and resent. Modern AI servers don't work without them.</p>
+<p>What I like most is content per server. Every new chip generation runs faster links, and more of them, so each board needs more of Astera's parts. It has also added switches that connect AI chips to each other and controllers for new memory standards. And it's neutral: it sells into every chip vendor's ecosystem, so I don't have to guess which AI chip wins.</p>
+<p>The business looks like a good chip designer should. It has no factories, high margins, and deep work with the biggest cloud companies while they design their systems. Once its parts are designed in, they usually stay for the whole generation.</p>
+<p>The risks: a short customer list, a much larger competitor that would happily absorb this function, and a valuation that swings hard on any AI news.</p>
+<p>I started the position in February and added on Monday's dip at a much lower price. It is now one of my largest holdings.</p>`
+},
+{
+  id:"p-2026-04-08-crwv", date:"2026-04-08", cat:"stock", tickers:["CRWV"],
+  title:"Why I own CRWV",
+  dek:"An AI cloud built on contracts, and a balance sheet built on debt.",
+  spec:[{t:"CRWV", name:"CoreWeave", layer:"Compute & sites", does:"Rents out AI computing on multi-year contracts", move:"Added Mar 30", watch:"New contracts vs. new debt"}],
+  body:`<p>CoreWeave buys AI chips in bulk, builds them into data centers, and rents the computing to companies training or running large models. It's a direct bet on one imbalance: demand for ready-to-use AI computing keeps running ahead of supply, and building your own takes years.</p>
+<p>The contracts make this a business. Most capacity is sold on multi-year commitments signed with large AI labs before or while the hardware goes in. When CoreWeave borrows to buy chips, it borrows against signed contracts.</p>
+<p>The balance sheet is the whole debate. The chips are bought with debt, and they lose value as new generations arrive. The bear case says the chips age faster than the loans get paid down, and if computing stops being scarce, prices collapse onto a pile of debt. The bull case says older chips keep earning on smaller workloads for years. Both make sense.</p>
+<p>The other risk is concentration: a few customers make up most of the revenue.</p>
+<p>I hold two lots, one from the winter and one added on last week's dip. It stays mid-sized because the debt does my sizing for me. My scorecard: are new contracts growing faster than new debt?</p>`
+},
+{
+  id:"p-2026-04-11-iren", date:"2026-04-11", cat:"stock", tickers:["IREN"],
+  title:"Why I averaged down on IREN",
+  dek:"A bitcoin miner's power sites may be worth more as AI data centers.",
+  spec:[{t:"IREN", name:"IREN", layer:"Compute & sites", does:"Power-ready sites moving from bitcoin mining to AI cloud", move:"Added Mar 30", watch:"Signed AI contracts with named customers"}],
+  body:`<p>IREN started as a bitcoin miner, and for many investors the analysis stops there. I think the market's discount is aimed at the company's history instead of its assets.</p>
+<p>To mine, IREN built large sites with cheap renewable power, secured grid connections, and land permitted for heavy electrical load. Grid connections take years to get. If the limit on AI is shifting from chips to electricity, an energized site with hundreds of megawatts is the scarce asset, and here it sits inside a company priced like a crypto stock.</p>
+<p>The plan is to point those megawatts at AI computing. The difference in revenue quality is huge: mining income depends on a coin price, while AI computing can be sold on contracts. Every megawatt that moves from one bucket to the other deserves a higher valuation.</p>
+<p>The uncomfortable part is that my first lot from last fall is deep underwater, and last week I bought a larger lot at a much lower price. Averaging down is how small accounts blow up, so my rule is that it's only allowed when the thesis has improved. I think it has. Power scarcity has become the builders' own talking point, and IREN's data center plans have gotten concrete.</p>
+<p>It stays mid-sized until real AI contracts with named customers show up.</p>`
+},
+{
+  id:"p-2026-04-15-memory", date:"2026-04-15", cat:"research", tickers:["MU","SNDK"],
+  title:"How the memory industry works",
+  dek:"Three makers, a new kind of chip, and why AI tightens the whole market.",
+  body:`<p>This is background for the two memory positions I've held since last fall. Memory is the part of the AI stack the market keeps underestimating.</p>
+<h3>DRAM: three survivors</h3>
+<p>DRAM used to be made by dozens of companies. Decades of price wars killed or merged almost all of them. Three are left: Samsung, SK Hynix and Micron. In recent cycles they've cut supply quickly when prices fall instead of chasing market share. That discipline is new, and I don't think the market fully prices it.</p>
+<h3>HBM: the growth engine</h3>
+<p>High-bandwidth memory stacks DRAM chips vertically and sits right next to the AI processor, because AI chips need data faster than normal memory can deliver it. HBM is hard to make and slow to qualify. It also uses about three times the factory capacity per bit of normal DRAM. Every wafer moved to HBM is supply removed from the regular market, so AI demand tightens the whole memory market.</p>
+<h3>NAND: the rougher cousin</h3>
+<p>Flash storage has more producers and deeper crashes. But the same consolidation has been grinding forward, and AI adds a new buyer: training data and AI output are pushing data centers toward flash.</p>
+<p>What I do with this: hold a DRAM and HBM maker and a flash maker through the up-cycle, and never forget what they are. These are cyclical stocks in growth costumes. The exit plan gets written on the way up, when everyone agrees the cycle is permanent.</p>`
+},
+{
+  id:"p-2026-04-18-check-in", date:"2026-04-18", cat:"portfolio", tickers:[],
+  title:"Portfolio check-in",
+  dek:"A month in: how the account is split, and the risk I'm choosing to take.",
+  body:`<p>A month into this journal, here is the shape of the account.</p>
+<ul><li><strong>Optics and connectivity</strong> is the largest group at about a third of the account. AAOI is up about two-thirds since March and is now my biggest position.</li><li><strong>Compute and power</strong> is about a fifth: CoreWeave, IREN and a small nuclear position, NuScale, that I haven't written up yet.</li><li><strong>Memory</strong> is about 15%, in two positions from last fall. Sandisk is up more than fourfold from my cost, and Micron has nearly doubled.</li><li><strong>Outside AI</strong> is about 8%: antimony miner UAMY and drone maker Ondas.</li><li><strong>Cash</strong> is just under a quarter.</li></ul>
+<p>Winners resize a portfolio without asking. AAOI was already a big bet, and four weeks of gains made it a fifth of the account. For now I'm letting it run, but I've started writing rules for when trimming stops being optional.</p>
+<p>The risk check: almost everything here is one correlated bet. If AI spending pauses, nearly all of it falls together, and the small diversifiers won't save it. I accept that. The cash is the counterweight.</p>
+<p>One discipline test: can I say in two sentences why I own each position and what would make me sell it? Today the answer is yes for all but one. That one gets researched or sold by the end of the month.</p>`
+},
+{
+  id:"p-2026-04-24-mu", date:"2026-04-24", cat:"stock", tickers:["MU"],
+  title:"Why I own MU",
+  dek:"A famously cyclical company with a structural reason this cycle could run longer.",
+  spec:[{t:"MU", name:"Micron Technology", layer:"Memory & storage", does:"One of three DRAM makers; also makes flash", move:"Holding since fall 2025", watch:"HBM pricing and new supply"}],
+  body:`<p>Micron is one of the three DRAM makers left, and a top flash maker too. For most of its history that made it a violent cyclical: you rented the stock for a year and a half and gave it back before the crash. My position from last fall is a bet that this cycle is different for structural reasons.</p>
+<p>The first is high-bandwidth memory. Micron fought its way into the top AI platforms, and demand is so strong that supply is committed far ahead. HBM sells less like a commodity and more like a design win: qualified early, priced on value, and tied to the customer's roadmap.</p>
+<p>The second is the factory math from my memory post. HBM uses about three times the capacity per bit, so the shift to HBM drains supply from the regular market while makers spend on converting capacity instead of adding it. Tight supply in normal memory plus premium prices in HBM is what makes memory makers very profitable.</p>
+<p>What can break it is the cycle itself. If AI chip demand pauses, HBM orders get hit first, and this new discipline has never faced a real demand shock. Chinese producers are also adding capacity in older products.</p>
+<p>My lot from last fall has roughly doubled, even after I sold some in January. It stays core for now, but it's first in line for the trimming rules I owe this journal.</p>`
+},
+{
+  id:"p-2026-05-01-sndk", date:"2026-05-01", cat:"stock", tickers:["SNDK"],
+  title:"Why I own SNDK",
+  dek:"A neglected spin-off meets the first AI-driven flash cycle.",
+  spec:[{t:"SNDK", name:"Sandisk", layer:"Memory & storage", does:"Flash memory and data center SSDs", move:"Holding since fall 2025", watch:"Flash prices and data center demand"}],
+  body:`<p>Sandisk returned to the public market in early 2025, spun off from Western Digital. Spin-offs are an old pattern for a mechanical reason: the shares land with holders who never chose them, index funds sell what doesn't fit, and few analysts cover the stock. When I bought last fall, that neglect was half the thesis.</p>
+<p>The other half is the flash cycle. NAND has been the most self-destructive corner of the chip industry, but the version that came out of the last downturn is consolidated and has held its discipline. Sandisk has real scale through its long-running manufacturing joint venture with Kioxia, which splits the huge factory costs.</p>
+<p>Then AI showed up as a new storage buyer. Training data, model checkpoints and AI output all land in data centers that increasingly want flash instead of spinning disks. A disciplined market plus a new structural buyer is the DRAM story one industry over, with less attention.</p>
+<p>To be clear about what this is: a cyclical. When NAND turns, it crashes, and no AI story changes the math of oversupply.</p>
+<p>It's the best trade in the account, up about five times from my cost even after sales in January and February. The plan, written down now: sell in stages into strength. Cyclicals reward the people who leave early.</p>`
+},
+{
+  id:"p-2026-05-08-power", date:"2026-05-08", cat:"research", tickers:[],
+  title:"Power is becoming the limit",
+  dek:"Why electricity, not chips, may be the next bottleneck.",
+  body:`<p>Every research thread I pull lately ends at the same wall: electricity. Generating it, moving it, and getting permission to connect to it.</p>
+<p>Start with scale. New AI campuses are planned in gigawatts, a unit that used to belong to cities. One large campus can need the output of a full power plant. Meanwhile, a new grid connection in the US can take years. You can build a chip in months, but you can't rush a substation approval.</p>
+<p>The builders' behavior proves the point. They're signing long-term deals with nuclear plants, paying to restart closed ones, generating power on site to skip the grid queue, and choosing locations by available power first. This spring's energy shock from the Iran war only raised the value of power that's secured and local.</p>
+<p>Inside the building, the same pressure shows up as heat. Racks are too dense for air cooling, so the industry is moving to liquid cooling piped straight to the chips. That adds new equipment to every site. Transformers and switchgear now have long lead times too.</p>
+<p>So I want the account's power exposure to be deliberate instead of accidental. The shortlist: an equipment maker that sells the electrical and cooling gear inside data centers, more generation exposure, and the power-site company I already own. The next buys follow the electricity.</p>`
+},
+{
+  id:"p-2026-05-14-smr", date:"2026-05-14", cat:"stock", tickers:["SMR"],
+  title:"Why I own SMR",
+  dek:"The first approved small reactor design, and a long wait for revenue.",
+  spec:[{t:"SMR", name:"NuScale Power", layer:"Power & cooling", does:"Small modular nuclear reactors", move:"Holding since January", watch:"A firm order from a named US customer"}],
+  body:`<p>NuScale wants to shrink nuclear plants into factory-built modules that can be produced in series instead of built as one-off megaprojects. The pitch is that nuclear's problem was never the physics. It was construction.</p>
+<p>Its most valuable asset is regulatory. It holds the first small modular reactor design approved by the US Nuclear Regulatory Commission, a process that takes years. Its scars explain the low price: its flagship US project was cancelled in 2023 after costs pushed the projected power price too high.</p>
+<p>What changed is demand. AI campuses need steady, clean, around-the-clock power. Wind and solar can't do it alone, and gas clashes with the buyers' carbon goals. Nuclear checks every box, and big tech has shown it will sign long contracts and pay a premium for firm clean power.</p>
+<p>Every risk here is the same risk: time. Real reactor revenue is years away, the company burns cash while it waits, and first-of-a-kind projects are where nuclear plans usually die.</p>
+<p>So it's one of my smallest positions. I need a firm order from a named North American customer within a reasonable window. Without one, patience becomes an excuse.</p>`
+},
+{
+  id:"p-2026-05-21-uamy", date:"2026-05-21", cat:"stock", tickers:["UAMY"],
+  title:"Why I own UAMY",
+  dek:"A tiny miner that is most of America's antimony supply.",
+  spec:[{t:"UAMY", name:"United States Antimony", layer:"Defense, space & minerals", does:"The only integrated US antimony producer", move:"Holding; sold half in February", watch:"Antimony prices and China's export rules"}],
+  body:`<p>This is the strangest position in the account: the only meaningful American producer of antimony, a metal most investors couldn't place on a periodic table.</p>
+<p>Antimony hardens lead in ammunition, goes into flame retardants, strengthens alloys and batteries, and clarifies the glass in solar panels. None of those uses has an easy substitute, so when supply breaks, price does the adjusting.</p>
+<p>Supply broke in late 2024, when China, which dominates mining and processing, banned antimony exports to the US. Prices went vertical. China suspended the ban last November as part of the trade truce, but every shipment still needs a license from Beijing, and the suspension runs out this November. Defense planners now know a key input for ammunition runs through a rival.</p>
+<p>UAMY owns the scarce thing: US mining and, just as important, US processing. In a market this small, a company this small is the whole American supply story. That cuts both ways. Expanding production is slow and expensive, and revenue depends on a commodity price that can fall as fast as it rose.</p>
+<p>Its job in an AI-heavy account is to move on different news: geopolitics and munitions instead of data centers. I sold half in February. The rest is up about 40% from my cost.</p>`
+},
+{
+  id:"p-2026-05-28-selling-rules", date:"2026-05-28", cat:"portfolio", tickers:[],
+  title:"My rules for selling",
+  dek:"Written down in calm, before any order goes in.",
+  body:`<p>My winners have grown into position sizes I never chose. Astera Labs is now about a fifth of the account and AAOI about a sixth. Size earned by price isn't the same as size earned by conviction, so here are my selling rules, written before any order goes in.</p>
+<p><strong>1. Size.</strong> When a position grows well past its target weight, the excess gets trimmed back to target. The thesis can be fully intact and the trim still happens.</p>
+<p><strong>2. Consensus.</strong> Every position was bought on a view the market didn't share. When that view becomes consensus, the edge is spent, even if the business keeps doing well. This matters most for cyclicals.</p>
+<p><strong>3. Better use.</strong> Money belongs where it's treated best. If fresher ideas offer more upside, funding them from stretched winners is the job.</p>
+<p><strong>4. Broken thesis.</strong> Sold immediately and completely, at any price. None of the other rules apply.</p>
+<p>The plan is a staged rotation over the coming weeks: trim the biggest winners toward target, exit names that haven't earned their place, and move toward power, cooling and a few new ideas. Cash will rise before it falls.</p>`
+},
+{
+  id:"p-2026-06-05-rebalance", date:"2026-06-05", cat:"portfolio", tickers:["VRT","MRVL","PL","OSS","POET","SMR"],
+  title:"June rebalance",
+  dek:"Trimming the winners, closing NuScale, and five new positions.",
+  body:`<p>The rotation I planned last week happened today. Here's what moved, checked against the rules.</p>
+<h3>Sold</h3>
+<ul><li><strong>NuScale, closed</strong> at a loss of about 44%, under rule 3. The thesis didn't break, but the firm US order I asked for hasn't come, and the money has nearer-term uses.</li><li><strong>Trims</strong> of Micron, Sandisk, Astera Labs and AAOI, back toward target weights under rule 1. Each sold something up a lot from cost, which is exactly when selling feels worst.</li></ul>
+<h3>Bought</h3>
+<ul><li><strong>Vertiv</strong>, power and cooling equipment, sized toward core.</li><li><strong>Marvell</strong>, custom AI chips and optics, to balance my tilt toward small companies.</li><li><strong>Planet Labs</strong>, satellite imaging, my first space position.</li><li><strong>One Stop Systems</strong> and <strong>POET</strong>, two small speculative bets.</li></ul>
+<p>The net effect: less concentration in names that already won, more exposure to power, cooling and data, and an account back in its intended shape. More trims are likely over the next few days as remaining orders work.</p>
+<p>A note for later grading: today's sales locked in gains on ideas that worked. Whether the new buys work can't be judged for months.</p>`
+},
+{
+  id:"p-2026-06-10-mrvl", date:"2026-06-10", cat:"stock", tickers:["MRVL"],
+  title:"Why I bought MRVL",
+  dek:"Two AI businesses in one company, at a lagging price.",
+  spec:[{t:"MRVL", name:"Marvell Technology", layer:"Chips & networking", does:"Custom AI chips for cloud companies, plus optical chips", move:"Bought Jun 5", watch:"Custom-chip wins and ramp timing"}],
+  body:`<p>Marvell has two separate AI businesses in one company, at a price that has lagged the famous names in each.</p>
+<p><strong>Custom chips.</strong> The largest cloud companies don't want to buy every AI chip from one vendor, so each is designing its own. A cutting-edge chip needs skills few companies have: advanced packaging, high-speed interconnect, and close ties to the top foundries. Marvell is one of only a couple of design partners that can do this at scale, and custom silicon is its fastest-growing business.</p>
+<p><strong>Optics.</strong> Marvell leads in the signal processors inside high-speed optical modules, the electronic brains of each link. My AAOI post covered why transceiver volumes are booming. Marvell collects on the same boom one layer up, where there are fewer competitors and better margins.</p>
+<p>The risks: custom-chip revenue is lumpy and fought over every generation, losing one big program would leave a visible hole, and its main rival is much bigger. The stock is only cheap compared with the AI leaders.</p>
+<p>I opened near core size, with room to add if the custom programs deliver. In an account full of small companies betting on one product, a large company with two ways to win adds stability.</p>`
+},
+{
+  id:"p-2026-06-13-vrt", date:"2026-06-13", cat:"stock", tickers:["VRT"],
+  title:"Why I bought VRT",
+  dek:"The most direct way to own the power and cooling buildout.",
+  spec:[{t:"VRT", name:"Vertiv", layer:"Power & cooling", does:"Power and cooling equipment for data centers", move:"Bought Jun 5", watch:"Orders and backlog"}],
+  body:`<p>Vertiv is the most direct way to own the power thesis. It sells the electrical and cooling systems inside data centers: power distribution, backup power, switchgear, and everything from room air handlers to liquid cooling piped to the chips.</p>
+<p>Liquid cooling is the growth engine. AI racks now draw more power than air can cool, and the industry is converting fast. For Vertiv that's added revenue on top of what it already sells: coolant distribution units, piping and heat rejection are products the air-cooled world never needed. Revenue per data center goes up, on new builds and on upgrades.</p>
+<p>The quieter strengths matter too. A large installed base produces service revenue through any cycle. Its gear is written into the standard designs that contractors and cloud companies use. And it's neutral: whoever wins the chip race needs power delivered and heat removed.</p>
+<p>The risks: orders track construction schedules, so any pause in the buildout hits bookings. The stock has already run a lot, so it assumes continued growth. And large electrical conglomerates are always competing.</p>
+<p>I sized it toward core. This is the position I expect to hold longest and think about least.</p>`
+},
+{
+  id:"p-2026-06-17-pl", date:"2026-06-17", cat:"stock", tickers:["PL"],
+  title:"Why I bought PL",
+  dek:"An archive of daily satellite images that AI can finally read.",
+  spec:[{t:"PL", name:"Planet Labs", layer:"Defense, space & minerals", does:"Satellites that image Earth's land every day", move:"Bought Jun 5, trimmed Jun 8", watch:"Profitable growth in government work"}],
+  body:`<p>Planet Labs runs the largest fleet of Earth-imaging satellites, enough to photograph nearly all of the planet's land every day. The real product is the dataset: a daily, years-deep picture of everything happening outside. Nobody can recreate that archive, because you can't go back and photograph the past.</p>
+<p>Demand has two engines. <strong>Defense and intelligence</strong> budgets are rising, satellite imagery has proven itself in every recent conflict, and Planet has been signing bigger multi-year government contracts. <strong>AI</strong> is the second engine. A daily photo of the world used to be useless if no one could look at all of it. Vision models remove that limit: they can count ships, track construction and flag change across the whole archive.</p>
+<p>The other side: Planet has spent its public life promising profitability, with more share dilution than delivery. Government sales are slow and lumpy, and each new satellite generation adds execution risk.</p>
+<p>I bought three pieces on rebalance day after a sharp drop from its May high, then trimmed about a quarter of it the next trading day to keep it inside the speculative tier. It's already below my cost. The milestone I'm holding it to is steady, profitable growth in government work.</p>`
+},
+{
+  id:"p-2026-06-20-oss-poet", date:"2026-06-20", cat:"stock", tickers:["OSS","POET"],
+  title:"Two small bets: OSS and POET",
+  dek:"The speculative end of the account, sized so being wrong is cheap.",
+  spec:[{t:"OSS", name:"One Stop Systems", layer:"Defense, space & minerals", does:"Rugged AI computers for vehicles and field sites", move:"Bought Jun 5", watch:"Program wins turning into shipments"},{t:"POET", name:"POET Technologies", layer:"Optics", does:"Chip-style manufacturing for optical parts", move:"Bought Jun 5", watch:"A volume design win"}],
+  body:`<p>These two play the same role: the speculative end of the account. Each is a small company in an overlooked corner of the buildout, priced for doubt, and each could double or halve without surprising anyone. Being wrong on both costs little. Being right on either pays for the pair.</p>
+<p><strong>One Stop Systems</strong> builds rugged high-performance computers: AI-class hardware made to survive vehicles, aircraft, ships and field sites. The idea is that AI moves to where decisions happen, and autonomous and defense systems can't wait on a distant data center. Defense budgets drive demand, and won programs run for years. The risks are classic for a small defense supplier: lumpy orders and slow procurement.</p>
+<p><strong>POET Technologies</strong> is the more speculative one. It has spent years developing a way to assemble optical components on a wafer, using chip-style manufacturing instead of costly manual assembly. If it gets designed in at scale, the cost advantage is big. But revenue is early, the cash comes from selling stock, and photonics history is full of elegant technology that never reached volume.</p>
+<p>Neither gets averaged down, so a speculative bet can never grow into a large one through stubbornness. Silence through year-end earns an exit.</p>`
+},
+{
+  id:"p-2026-06-26-selling-notes", date:"2026-06-26", cat:"portfolio", tickers:["SNDK","ONDS"],
+  title:"Notes on selling",
+  dek:"Three weeks of selling, and what it felt like.",
+  body:`<p>Investment writing is mostly about buying. Selling gets a fraction of the attention and decides most of the outcome. I've done more selling in the past three weeks than ever before, so here's what it was like.</p>
+<p>The mechanics: I sold in waves from rebalance day through mid-June, mostly deep trims of the big winners. Sandisk is still nearly ten times my cost even after the sales. I also closed Ondas, a small drone position from January, at about a 15% loss. It never earned a write-up, which told me something. Cash is now a bit over a third of the account, the most since this journal started.</p>
+<p>The psychology is where discipline lives or dies. Every trim felt like a mistake when I placed it. The stocks had been good to me, the story was everywhere, and some kept rising after I sold. That's what the selling rules are for. A trim manages position size, and a stock rising after a partial sale doesn't prove the trim was wrong. About half of all trims will look early.</p>
+<p>Taxes, kept general: active trading in a taxable account gives up a real slice of gains to short-term rates. I accept that, because holding oversized positions to improve a tax bill lets the tail wag the dog.</p>
+<p>What's left is an account I can defend line by line: core positions in strong businesses, speculative bets sized like bets, and enough cash to buy the next red week.</p>`
+},
+{
+  id:"p-2026-07-03-half-year", date:"2026-07-03", cat:"portfolio", tickers:[],
+  title:"Half-year review",
+  dek:"The account more than doubled in six months. Here's what did it.",
+  body:`<p>Six months are done. Percentages only, but here's everything.</p>
+<h3>The headline</h3>
+<p>The account rose about 116% in the first half, measured on a time-weighted basis so the cash I added in March doesn't inflate it. The S&amp;P 500 rose about 10% and the semiconductor ETF (SMH) about 82%. Cash ended June at about 36% of the account.</p>
+<h3>Winners</h3>
+<p>Sandisk is my trade of the year, up roughly 950% from my fall cost even after four rounds of selling. Micron is up about 380% and Astera Labs about 365%. Behind them: AAOI +48%, CoreWeave +26%, UAMY +25%, Vertiv +13%, One Stop +10%, Marvell +9% and IREN +6%.</p>
+<p>IREN hides a lesson. The spring lot is up about 36%, while last fall's lot was sold at a loss. Averaging into an improved thesis worked this time. It could just as easily have doubled a mistake.</p>
+<h3>Losers</h3>
+<p>NuScale (−44%) and Ondas (−15%) were closed in June. POET is down 13% and Planet Labs is about flat. The June buys are too new to grade.</p>
+<h3>Lessons</h3>
+<ul><li>Nearly everything that worked was one bet on AI hardware. These results measure a theme more than a skill.</li><li>The structure worked: core positions compounded and the speculative ones stayed small.</li><li>Selling is still my weakest muscle. Every trim happened on schedule and every one felt wrong, so the rules should stay strict.</li></ul>
+<h3>Already in July</h3>
+<p>The second half started badly. Chip stocks fell hard on July 1 and 2, and the account lost about 9% in two days. I have plenty of cash, and this is the kind of drop I keep it for.</p>`
+}
+];
+</script>
+<script>
+/* Posts: July 7 to October 9, 2026 (new) */
+var POSTS_B = [
+{
+  id:"p-2026-07-07-back-in", date:"2026-07-07", cat:"portfolio", tickers:["AAOI","MRVL","BE"],
+  title:"Back in: AAOI, Marvell and Bloom Energy",
+  dek:"The first buys of the second half, made into a falling market.",
+  body:`<p>Chip stocks have fallen for most of the past week. Since June 30 the semiconductor ETF is down about 11%, and so is my account. Today I spent about 40% of my cash.</p>
+<ul><li><strong>AAOI.</strong> I bought back in at about 38% below the average price I sold at in June. Nothing in the business has changed. The stock got cut along with everything else that ran.</li><li><strong>Marvell.</strong> Added at about 18% below my first lot from June 5, bringing it toward full size.</li><li><strong>Bloom Energy</strong>, a new position: fuel cells that generate power on site at data centers. It's about 22% below its June high. Full post on Friday.</li></ul>
+<p>Why now: these were the names on my list, and their prices reached the levels I wrote down. Buying into a falling market feels bad, which is usually a sign the price is better.</p>
+<p>The new risk is outside the chip world. The US and Iran traded strikes again today, the first serious fighting since the June agreement, and oil jumped. Higher oil means stickier inflation, which makes a Fed rate hike more likely, and expensive growth stocks are the first thing investors sell on that.</p>
+<p>Cash is now about a quarter of the account. If prices keep falling I'll keep buying in steps, not all at once.</p>`
+},
+{
+  id:"p-2026-07-10-be", date:"2026-07-10", cat:"stock", tickers:["BE"],
+  title:"Why I bought BE",
+  dek:"Fuel cells that let a data center skip the line for grid power.",
+  spec:[{t:"BE", name:"Bloom Energy", layer:"Power & cooling", does:"Fuel cells that generate electricity on site", move:"Bought Jul 7", watch:"Data center orders and full-year guidance"}],
+  body:`<p>Bloom Energy makes solid oxide fuel cells: boxes that turn natural gas into electricity through a chemical reaction instead of burning it. For data centers, the selling point is speed. A grid connection can take years, and new gas turbines have long waitlists. Bloom says it can deliver and install power in months.</p>
+<p>That's the bottleneck from my power post. The builders' constraint is shifting from chips to getting electricity to a site fast enough. Bloom lets a data center skip the queue and run on its own power, then keep the fuel cells as backup once the grid arrives.</p>
+<p>The deals are getting big. Oracle uses Bloom to power its data centers, the utility AEP signed for up to 1 gigawatt, and Brookfield committed up to $5 billion to deploy Bloom systems at AI sites. A few years ago this was a niche clean-energy company. Now it's part of the AI power supply chain.</p>
+<p>The risks: fuel cells cost more per unit of power than the grid, and they still run on natural gas, so gas prices matter. The stock is extremely volatile. It was already about 22% below its June high when I bought, and it has fallen another 9% since Tuesday.</p>
+<p>I sized it as a mid-sized position. The second-quarter report at the end of July will show whether demand is turning into revenue.</p>`
+},
+{
+  id:"p-2026-07-14-wulf", date:"2026-07-14", cat:"stock", tickers:["WULF"],
+  title:"Why I bought WULF",
+  dek:"A former bitcoin miner with a 20-year lease from Anthropic.",
+  spec:[{t:"WULF", name:"TeraWulf", layer:"Compute & sites", does:"Builds and leases power-ready data centers", move:"Bought Jul 13", watch:"The Kentucky campus staying on schedule"}],
+  body:`<p>TeraWulf runs the same playbook as IREN: a bitcoin miner with power-ready land, turning itself into a landlord for AI computing. The difference is that TeraWulf already has the big contract.</p>
+<p>Last week it signed a 20-year lease with Anthropic for about 400 megawatts at a new campus in Kentucky. The lease is worth roughly $19 billion over its first term, and more if Anthropic extends it. Delivery starts in the second half of 2027. At its New York campus, TeraWulf already hosts AI capacity for Fluidstack, with Google backing those leases.</p>
+<p>I like the structure. A 20-year lease with one of the top AI labs looks more like infrastructure than a tech bet. Once the building is delivered, TeraWulf collects rent whether AI models get cheaper or not. That's the kind of revenue a former miner gets re-rated on.</p>
+<p>The risks are about getting there. Building 400 megawatts takes enormous amounts of money, so I expect heavy borrowing and new shares. Construction delays would push revenue out. And one tenant is a lot of concentration.</p>
+<p>I bought yesterday, a week after the announcement, once the excitement had faded. The milestone is simple: the Kentucky campus on schedule.</p>`
+},
+{
+  id:"p-2026-07-17-axti", date:"2026-07-17", cat:"stock", tickers:["AXTI","AAOI"],
+  title:"Why I bought AXTI",
+  dek:"The wafer underneath every optical laser, made in a country that controls its exports.",
+  spec:[{t:"AXTI", name:"AXT Inc", layer:"Optics", does:"Indium phosphide wafers, the base material for optical lasers", move:"Bought Jul 13 and Jul 16", watch:"China export permits and indium phosphide sales"}],
+  body:`<p>If optics is the next bottleneck in AI, indium phosphide is the bottleneck inside it. The lasers in high-speed optical transceivers are built on indium phosphide wafers, and only a handful of companies make them. AXT is one of the largest.</p>
+<p>This sits one layer below AAOI. Every 800G and 1.6T module that AAOI, Lumentum or Coherent ships needs lasers, and every laser starts as a slice of one of these wafers. Demand is rising faster than capacity, and AXT's sales are climbing with it.</p>
+<p>The catch is geography. AXT makes its wafers in China, and China put indium phosphide on its export-control list last year, so every overseas order needs a permit. Permits for Europe and Japan have come through, and US shipments still depend on approvals. A policy change in Beijing could cut off much of the business overnight.</p>
+<p>That risk, along with a large share sale in April and insider selling, is why the stock has fallen about two-thirds since May. I think the price now reflects the risk more than the opportunity.</p>
+<p>I bought on Monday and added yesterday after another drop. I also added to AAOI on Wednesday. Optics is now my biggest group at about 30% of the account, and cash is down to about 4%. That's faster than I said I'd go on July 7. AXT reports in two weeks, and that report matters more than usual.</p>`
+},
+{
+  id:"p-2026-07-22-chip-selloff", date:"2026-07-22", cat:"markets", tickers:["MU","SNDK","SKHY"],
+  title:"What's behind the chip selloff",
+  dek:"Five reasons chip stocks have fallen, and which ones I think matter.",
+  body:`<p>The semiconductor ETF is down about 12% from its June 22 peak. Memory has been hit harder: Micron is down about 21% and Sandisk about 32%. My account is down about 16% since June 30, after a rough week and a partial bounce. Here's what I think is going on.</p>
+<ol><li><strong>Profit-taking.</strong> Memory and optics just had one of their best half-years ever, and a lot of investors own the same names. When everyone is in the same trade, the exit gets crowded.</li><li><strong>Memory prices are biting.</strong> Memory makers raised prices so fast that phone and PC makers are pushing back, and reports say Apple is lining up Chinese suppliers. High prices can shrink demand outside AI.</li><li><strong>Korea.</strong> A Korean brokerage cut its estimate for SK Hynix's quarter because of slower HBM4 shipments, and the stock had its worst day ever on July 13. Every memory stock followed it down.</li><li><strong>A lawsuit.</strong> A new class action accuses the three DRAM makers of limiting supply to raise prices.</li><li><strong>Oil and rates.</strong> Since fighting with Iran resumed on July 7, oil is up more than 25%. The 10-year Treasury yield is rising, and traders see a real chance of a Fed rate hike within the next two meetings.</li></ol>
+<p>The fifth matters most for valuations. Higher rates make future profits worth less today, and that hits expensive growth stocks first. The second matters for the cycle, and I'm watching it. The third and fourth look like noise to me, since one analyst's estimate and a lawsuit don't change HBM demand.</p>
+<p>The real test comes next week, when Microsoft, Alphabet, Amazon and Meta report and update their spending plans. If AI spending holds, this is a correction inside an uptrend. If it gets cut, my whole account has a problem, and I'll say so here.</p>`
+},
+{
+  id:"p-2026-07-27-skhy", date:"2026-07-27", cat:"stock", tickers:["SKHY"],
+  title:"Why I bought SKHY",
+  dek:"The leader in AI memory, now listed in New York.",
+  spec:[{t:"SKHY", name:"SK Hynix", layer:"Memory & storage", does:"The largest maker of high-bandwidth memory", move:"Bought Jul 27", watch:"HBM4 shipments for Nvidia's next chips"}],
+  body:`<p>SK Hynix is the leader in high-bandwidth memory, the stacked DRAM that sits next to every Nvidia AI chip. Until this month, owning it meant buying shares in Korea. On July 10 it listed American depositary shares on the Nasdaq, so now I can own it directly.</p>
+<p>Why add a third memory company when I already hold Micron and Sandisk? Because SK Hynix has the biggest share of the most important product. It supplied most of the HBM for Nvidia's current chips and is expected to supply the majority for the next generation, Vera Rubin. Micron and Samsung compete for second place.</p>
+<p>The timing is uncomfortable. Memory stocks are in a sharp selloff, and the US shares are down about 15% since their first day. SK Hynix reports tomorrow, after a Korean broker warned it could miss on slower HBM4 shipments. I'm buying anyway, because I care more about HBM demand in 2027 than about one quarter's shipment timing.</p>
+<p>The risks: this is a cyclical company near the top of a boom, Samsung is fighting hard to win back HBM share, and Korean stocks carry their own political and currency risk.</p>
+<p>With this buy I've spent the last of my cash. That's not where I wanted to be, and it's the main thing I'm watching this week.</p>`
+},
+{
+  id:"p-2026-07-31-worst-month", date:"2026-07-31", cat:"markets", tickers:["SKHY","VRT","MU","SNDK","AXTI","BE"],
+  title:"Chips' worst month since 2008",
+  dek:"The chip index fell 21% in July. I ran out of cash two days before the bottom.",
+  body:`<p>The Philadelphia semiconductor index fell about 21% in July, its worst month since October 2008. My account fell about 23%. I spent the last of my cash on July 27, two trading days before the bottom, and the account dropped about 17% in those two days.</p>
+<h3>How it ended</h3>
+<p>July 28 and 29 stacked the bad news. SK Hynix posted a record quarter that still missed estimates. A report said a Chinese state-backed company had started mass-producing advanced lithography tools, which hit the whole chip-equipment chain. Vertiv fell 17% when revenue came in light on project timing. And the Fed held rates, with three officials voting for a hike.</p>
+<p>Then July 30 flipped it. Microsoft said its cloud business grew 43%, the fastest since 2022, and chip stocks jumped. Micron rose about 18% and Sandisk about 26% in a day. Bloom Energy reported its first billion-dollar quarter and also rose 26%. AXT reported a blowout quarter after the close and rose another 29% the next day.</p>
+<h3>What I got wrong</h3>
+<p>Most of my July buys were in companies I still want to own. The mistake was the pace. On July 7 I said I'd buy in steps, and by July 16 I was down to 4% cash. When the real flush came, I had nothing left to buy it with.</p>
+<h3>A new rule</h3>
+<p><strong>Cash never goes below 10% of the account, even when prices are on my list.</strong> The last 10% is for the day I can't predict.</p>`
+},
+{
+  id:"p-2026-08-07-earnings-check", date:"2026-08-07", cat:"portfolio", tickers:["AXTI","BE","ALAB","SNDK","AAOI","VRT"],
+  title:"Earnings check",
+  dek:"Six reports in nine days, graded against the reasons I bought.",
+  body:`<p>Most of my companies reported over the past nine days. Here are the six that matter most for the account, each graded against the thesis I wrote.</p>
+<ul>
+<li><strong>AXT:</strong> revenue up about 165% from a year ago, record indium phosphide sales, and a real profit. The stock has nearly doubled since the report. <em>Thesis confirmed.</em></li>
+<li><strong>Bloom Energy:</strong> its first billion-dollar quarter, revenue up about 165%, and a higher forecast for the year. The CEO said some customers are cancelling gas-turbine orders to buy fuel cells instead. <em>Thesis confirmed.</em></li>
+<li><strong>Astera Labs:</strong> revenue doubled, and it guided to 40% growth next quarter alone. The stock fell 12% the next day anyway. <em>Thesis confirmed, valuation stretched.</em></li>
+<li><strong>Sandisk:</strong> full-year revenue up 175%, with data center sales more than five times last year's. About two-thirds of the quarter's growth came from higher prices. <em>Thesis confirmed, with a reminder that price-driven growth can reverse.</em></li>
+<li><strong>AAOI:</strong> record revenue and a return to profit. Shipments of its 800G modules more than doubled in a quarter, and it expects demand to outrun capacity into mid-2027. <em>On track.</em></li>
+<li><strong>Vertiv:</strong> the one miss. Revenue grew 24% but fell short of estimates because of supply-chain congestion and project timing. It raised its full-year outlook anyway. <em>Intact, but the market has stopped giving it the benefit of the doubt.</em></li>
+</ul>
+<p>The pattern is that the businesses are doing better than the stocks. My account is up about 18% this week, but it's still well below where July started. July punished prices, not results.</p>`
+},
+{
+  id:"p-2026-08-12-uamy", date:"2026-08-12", cat:"stock", tickers:["UAMY"],
+  title:"UAMY: half the price, half the forecast",
+  dek:"Antimony prices halved. Part of my thesis broke, and part of it didn't.",
+  spec:[{t:"UAMY", name:"United States Antimony", layer:"Defense, space & minerals", does:"The only integrated US antimony producer", move:"Holding, no adds", watch:"China's export ban suspension, which ends Nov 27"}],
+  body:`<p>United States Antimony cut its 2026 revenue forecast roughly in half yesterday, and the stock fell about 25%. The reason is simple. Antimony prices have about halved from a year ago, and management expects them to stay low for the rest of 2026.</p>
+<p>My thesis had two parts. The first was scarcity: China's export ban would keep antimony expensive. That part broke. China suspended the ban last November, users who stockpiled during the 2025 panic are working through their inventory, and prices came back down. The second part was strategic: the only integrated US producer, with defense contracts and federal grants behind it. That part is intact, but it's worth much less when the metal is cheap.</p>
+<p>My rule says a broken thesis gets sold. Half-broken is harder. The position is now about 1% of the account, so it can't hurt me much either way, and there's one dated catalyst left: China's suspension of the ban ends on November 27. If Beijing lets it lapse, scarcity comes back.</p>
+<p>So I'm holding, with no adds and a deadline. If the suspension is extended and prices haven't found a floor by year-end, I'll sell and use the loss against this year's gains. Either way, the lesson stands: I bought a commodity story when the commodity price was the whole story.</p>`
+},
+{
+  id:"p-2026-08-14-inflation", date:"2026-08-14", cat:"markets", tickers:[],
+  title:"Inflation is stuck, and the Fed is restless",
+  dek:"July's numbers, a stalling job market, and why a rate hike is now on the table.",
+  body:`<p>Two reports this month frame the problem the Fed is facing.</p>
+<p><strong>Inflation is stuck near 3.4%.</strong> Consumer prices in July rose 3.4% from a year earlier, a bit below June and well below April's 4.2% peak. Underneath, it's a split picture. Core inflation, which leaves out food and energy, fell to 2.4%, the lowest since early 2021. Gasoline is up about 27% from a year ago. Most of the inflation problem is the war, coming through oil.</p>
+<p><strong>Hiring has stalled.</strong> The economy lost about 23,000 jobs in July, and earlier months were revised down. Unemployment is still low at 4.1%, but the trend is weak.</p>
+<p>A weak job market usually means rate cuts. This time, three Fed officials already voted to raise rates in July, and the committee is treating inflation as the bigger risk. Markets now price a real chance of a hike in September, which would be the first since 2023.</p>
+<p>Why this matters for my account: almost everything I own is valued on profits years in the future, and higher rates make those profits worth less today. That doesn't change how much memory Micron sells. It changes what investors will pay for it, and the July selloff was partly that.</p>
+<p>I've added new money recently, so cash is back to about a quarter of the account. It earns interest in a money market fund while I wait.</p>`
+},
+{
+  id:"p-2026-08-19-crwv", date:"2026-08-19", cat:"stock", tickers:["CRWV"],
+  title:"CRWV: the backlog is winning",
+  dek:"Checking CoreWeave against the one scorecard I gave it in April.",
+  spec:[{t:"CRWV", name:"CoreWeave", layer:"Compute & sites", does:"Rents out AI computing on multi-year contracts", move:"Holding, no adds", watch:"Backlog growth vs. debt growth"}],
+  body:`<p>In April I gave CoreWeave one scorecard: are new contracts growing faster than new debt? Last week's report is the clearest answer yet.</p>
+<p><strong>Contracts.</strong> The backlog of signed revenue reached about $104 billion, up about 246% from a year ago, and the company added more than $25 billion of new commitments in the weeks after the quarter closed. Revenue more than doubled.</p>
+<p><strong>Debt.</strong> About $35 billion, and interest costs more than doubled from a year ago. The company still loses money after interest, and interest is growing faster than revenue right now. That's the number the bears point to.</p>
+<p>My read is that the backlog is winning. Contracted revenue is growing faster than the debt that funds it, and most of that debt is tied to specific contracts. The danger isn't this year's interest bill. It's a big customer failing to pay, and the customer list is still short.</p>
+<p>The stock jumped about 19% the day after the report and has since given most of it back. My position is up about 15% from cost and is about 4% of the account. I'm not adding, because the debt still sets my sizing.</p>`
+},
+{
+  id:"p-2026-08-21-memory-cycle", date:"2026-08-21", cat:"research", tickers:["MU","SNDK","SKHY"],
+  title:"How long can the memory boom last?",
+  dek:"Prices are still rising, but more slowly. What would tell me the cycle is turning.",
+  body:`<p>Memory makers are posting numbers nobody has seen before. SK Hynix's operating profit last quarter was more than six times what it was a year earlier. Sandisk's yearly revenue nearly tripled. Micron reports next month. My three memory positions are about 12% of the account, so the question is how long this lasts.</p>
+<p><strong>The case that it keeps going.</strong> AI demand for high-bandwidth memory is booked far ahead, HBM eats about three times the factory space of normal memory, and new factories take two to three years. DRAM contract prices are still rising, by about 13% to 18% this quarter according to TrendForce.</p>
+<p><strong>The case that it's peaking.</strong> That same forecast was around 60% last quarter, so growth is slowing fast. Phone and PC makers say they've hit their price limit. Korean makers are spending heavily on new capacity. And China is building its own supply, with domestic chipmaking tools now in production.</p>
+<p>Memory cycles don't end when prices stop rising. They end when supply catches up while everyone is still confident. Here's what I'll watch:</p>
+<ol><li>Contract prices flat for two straight months.</li><li>All three DRAM makers raising spending plans at the same time.</li><li>Customer inventories building up instead of running down.</li><li>Chinese DRAM showing up in big-name phones and PCs.</li></ol>
+<p>None of these is flashing yet, though the first is getting close. I trimmed hard in June, so my memory weight is about half what it was then. I'll hold it there and let these signals decide the next move.</p>`
+},
+{
+  id:"p-2026-08-28-nvda-mrvl", date:"2026-08-28", cat:"markets", tickers:["NVDA","MRVL"],
+  title:"Nvidia up, Marvell down",
+  dek:"Two reports in two days, and a lesson about when good news counts.",
+  body:`<p>Nvidia reported on Wednesday. Revenue rose 106% from a year ago, data center sales rose 117%, and it guided higher again for next quarter. Management also said growth next year should be around 70%, limited by supply rather than demand. For the companies I own, that's the most important sentence of the month, because every Nvidia system needs memory, optics, connectivity chips and power.</p>
+<p>Marvell reported the next day. Revenue grew 37%, data center sales grew 46%, and it raised its outlook. The stock fell 10% today.</p>
+<p>The reason is timing. Earlier this month Marvell disclosed an expanded custom-chip deal with Google that could be worth up to $120 billion in revenue over many years, and the stock jumped. On this week's call, management said real revenue from the deal starts in fiscal 2029, more than two years out. Investors had priced it as if it started sooner.</p>
+<p>The lesson: a good report isn't enough when the stock has already moved on the story. I bought Marvell for exactly this custom-chip business, and nothing in the report weakens it. My position is about 12% below cost. I'm holding without adding until the custom-chip ramp shows up in the numbers.</p>
+<p>Also today, Fed Chair Kevin Warsh gave his first Jackson Hole speech, and markets read it as hawkish. Traders now lean toward a rate hike in September.</p>`
+},
+{
+  id:"p-2026-09-01-august-review", date:"2026-09-01", cat:"portfolio", tickers:[],
+  title:"August review",
+  dek:"A better month, new cash on the sidelines, and why I'm not spending it yet.",
+  body:`<p>August was a recovery month. The account rose about 7%, ahead of the S&amp;P 500 and the semiconductor ETF, which each rose about 3%. It's still about 18% below where it was on June 30.</p>
+<h3>Movers</h3>
+<p>Sandisk (+29%) and Micron (+16%) led as memory bounced. AAOI rose about 14% after its report. AXT ran up nearly 60% in two weeks and then gave all of it back, ending the month flat. The laggards were One Stop and TeraWulf, each down about 15%. My June speculative buys, One Stop, Planet Labs and POET, are now each about 40% below cost.</p>
+<h3>New cash</h3>
+<p>I added new money to the account after the July buying, so cash is about 28% of the account. I'm in no hurry to spend it. July showed me what happens when I deploy too fast, and the backdrop has gotten harder: the Fed sounds ready to raise rates, oil is back near $90, and the 10-year Treasury yield is close to 4.8%.</p>
+<h3>The plan for September</h3>
+<ul><li>No new positions until after the Fed meeting on September 16.</li><li>Add to core names only on big drops, in small steps.</li><li>The speculative tier stays frozen: no adds to One Stop, Planet Labs, POET or UAMY.</li></ul>`
+},
+{
+  id:"p-2026-09-04-pl", date:"2026-09-04", cat:"stock", tickers:["PL"],
+  title:"PL: beat, raise, and still falling",
+  dek:"A good quarter from Planet Labs, and my worst June buy.",
+  spec:[{t:"PL", name:"Planet Labs", layer:"Defense, space & minerals", does:"Satellites that image Earth's land every day", move:"Holding, no adds", watch:"Backlog growth and new defense contracts"}],
+  body:`<p>Planet Labs reported last night: sales up 58% from a year ago, its first positive adjusted profit, and a higher forecast for the year. The stock slipped again today.</p>
+<p>Two things explain it. The forecast for next quarter came in below what analysts expected, and the backlog of signed contracts grew only 11% from a year ago, which is slow for a company priced on growth. The company also has a program in place to sell up to $1.5 billion of new stock over time, and that supply hangs over the price.</p>
+<p>The stock is down about 65% from its May high and about 44% below my cost. It's the worst result among my June buys.</p>
+<p>What went wrong is mostly mine. I bought after a sharp drop from the May peak and assumed the worst was over. Even after that drop, the stock was still up more than 50% for the year when I bought, so the valuation had a long way to fall. The business is doing roughly what I expected. The price I paid wasn't justified.</p>
+<p>I'm holding, with no adds. Defense demand is real and AI is making imagery more useful, and at about 3% of the account the position can't sink me. If the backlog doesn't speed up by early next year, I'll sell and take the tax loss.</p>`
+},
+{
+  id:"p-2026-09-10-oil", date:"2026-09-10", cat:"markets", tickers:["BE"],
+  title:"Oil is back above $100",
+  dek:"Attacks on tankers and a Saudi pipeline sent crude higher. How it reaches my portfolio.",
+  body:`<p>Brent crude crossed $100 a barrel yesterday for the first time since late July. Tankers were attacked near Dubai and Iraq, a drone strike shut Saudi Arabia's main east-west oil pipeline, and Ukraine kept hitting Russian oil infrastructure. Traffic through the Strait of Hormuz is still a fraction of its prewar level, and the US emergency oil reserve is at its lowest since the early 1980s.</p>
+<p>I don't own energy stocks, but oil reaches my portfolio three ways.</p>
+<ol><li><strong>Inflation.</strong> Gasoline and diesel feed straight into consumer prices, and fuel costs spread into shipping and food.</li><li><strong>Rates.</strong> Inflation keeps the Fed leaning toward a hike next week. The 10-year Treasury yield is near 4.9%, up from about 4.5% in early July.</li><li><strong>Power.</strong> Expensive energy makes reliable local electricity more valuable, which supports the case for Bloom Energy and the power-site companies. It also raises costs for every data center.</li></ol>
+<p>The first two are bad for expensive growth stocks, which is most of what I own, and the third is mixed. On balance an oil shock is a headwind for this account, and it's one reason I'm keeping a big cash cushion.</p>
+<p>The next inflation report and next week's Fed meeting are the two events that matter most this month.</p>`
+},
+{
+  id:"p-2026-09-17-fed-hike", date:"2026-09-17", cat:"markets", tickers:[],
+  title:"The Fed hikes into 5% yields",
+  dek:"The first rate increase since 2023, and what a 5% Treasury yield means for stocks like mine.",
+  body:`<p>The Fed raised its benchmark rate by a quarter point yesterday, to a range of 3.75% to 4%. It's the first increase since July 2023 and the first under Chair Kevin Warsh. The vote was unanimous, and most officials expect one more hike before the end of the year.</p>
+<p>Warsh's message was short: inflation has been too high for too long, and this summer's readings don't show real improvement. August inflation held at 3.4%. Energy is the main reason, but monthly core inflation also came in a little hot.</p>
+<p>The bond market moved first. On Monday the 10-year Treasury yield crossed 5%, a level it had touched only briefly in 2023 and hadn't otherwise reached since 2007. Inflation worries, heavy government borrowing and the oil shock all pushed it there.</p>
+<h3>Why 5% matters for my stocks</h3>
+<p>A 5% yield is what investors can earn with almost no risk, and every stock has to compete with it. For a company valued on profits five or ten years out, a higher discount rate takes a bigger bite out of today's price. That arithmetic is why my account fell harder than the market on every rate scare this summer.</p>
+<p>The flip side is that my cash earns more, and the bar for new buys is higher. A stock has to offer much more than 5% a year to be worth the risk. I'm fine with that bar. It keeps me from buying things just because they've fallen.</p>`
+},
+{
+  id:"p-2026-09-23-is-this-2000", date:"2026-09-23", cat:"research", tickers:["ORCL","CRWV","AAOI","AXTI"],
+  title:"Is this 2000?",
+  dek:"Comparing today's AI spending boom with the telecom bust, point by point.",
+  body:`<p>Every week someone compares the AI boom to the telecom bubble of 2000. I own the suppliers, and suppliers got destroyed last time, so I owe myself a straight comparison.</p>
+<h3>What looks the same</h3>
+<ul><li><strong>Spending is outrunning revenue.</strong> Microsoft, Alphabet, Amazon and Meta plan to spend more than $700 billion on capital projects this year, up from about $410 billion in 2025. AI revenue is growing fast, but not that fast yet.</li><li><strong>Some builders run on debt.</strong> Oracle borrowed heavily to build data centers for OpenAI, its free cash flow is deeply negative, and its stock had its worst week in 25 years in June. CoreWeave, IREN and TeraWulf all borrow heavily too.</li><li><strong>Money goes in circles.</strong> Chipmakers invest in AI labs that then buy their chips, which flatters demand.</li><li><strong>The key buyer is private.</strong> OpenAI has pushed its IPO to 2027, so the market can't see its books.</li></ul>
+<h3>What looks different</h3>
+<ul><li><strong>The biggest spenders are rich.</strong> The four giants fund most of their spending from cash flow. In 2000, the fiber was laid by young, indebted carriers that went bankrupt.</li><li><strong>The capacity is being used.</strong> By 2002 only a few percent of the fiber in the ground was lit. Today Nvidia says next year's growth is limited by supply.</li><li><strong>Valuations are high but not extreme.</strong> Leaders like Nvidia trade at a fraction of the multiples Cisco reached in 2000.</li></ul>
+<h3>What I take from it</h3>
+<p>The part that worries me: in 2001, optical component makers fell harder than almost anything. Optics is about a quarter of my account. If spending stalls, my stocks fall first and furthest.</p>
+<p>So I'm setting one clear sell signal. If two of the four big spenders cut their capital spending plans, I cut the account's AI hardware exposure by a third, with no debate. Until then, the evidence says the demand is real.</p>`
+},
+{
+  id:"p-2026-09-25-iren-wulf", date:"2026-09-25", cat:"stock", tickers:["IREN","WULF"],
+  title:"IREN and TeraWulf: same plan, different results",
+  dek:"Two former bitcoin miners, one lesson about when revenue starts.",
+  spec:[{t:"IREN", name:"IREN", layer:"Compute & sites", does:"AI cloud on its own power sites", move:"Holding", watch:"Each new deployment going live"},{t:"WULF", name:"TeraWulf", layer:"Compute & sites", does:"Builds and leases power-ready data centers", move:"Holding, no adds", watch:"Kentucky build progress and financing"}],
+  body:`<p>I own two former bitcoin miners turning their power sites into AI data centers. Since July they've gone in opposite directions. IREN is roughly back to my cost, while TeraWulf is about 25% below where I bought it.</p>
+<p><strong>IREN</strong> is further along. Microsoft accepted the first of four deployments under its five-year cloud contract, so revenue from that deal has started. In August IREN signed a second multi-year contract with a frontier AI lab, and this month its 2-gigawatt Texas site cleared an important step in the state's grid-connection process. Contracted annual revenue is now about $4 billion.</p>
+<p><strong>TeraWulf</strong> has the bigger single contract, the 20-year Anthropic lease, but money from it doesn't start until late 2027. Until then it has to raise and spend billions to build the campus, which means more borrowing and more shares. Insiders have also been selling. The market is charging for the wait.</p>
+<p>I should have weighed this in July: for capital-heavy companies, <em>when</em> the revenue starts matters as much as how big the contract is. IREN's revenue is arriving now. TeraWulf's is a year away, with a lot of financing in between.</p>
+<p>I'm holding both. TeraWulf is about 3% of the account, and the lease is real. But I won't add until the Kentucky build shows steady progress and most of the funding is in place.</p>`
+},
+{
+  id:"p-2026-10-01-mu", date:"2026-10-01", cat:"stock", tickers:["MU"],
+  title:"Micron's $54 billion quarter",
+  dek:"Record numbers, a year of visibility, and a hard look at my own trims.",
+  spec:[{t:"MU", name:"Micron Technology", layer:"Memory & storage", does:"One of three DRAM makers; also makes flash", move:"Holding (trimmed Jan and Jun)", watch:"2027 HBM pricing and new capacity plans"}],
+  body:`<p>Micron reported last night, and the numbers barely look real. Quarterly revenue was nearly five times what it was a year ago. Gross margin was about 87%, which is software territory for a company that runs factories. Next quarter's forecast is higher again.</p>
+<p>Two details matter more than the headline. First, Micron says most of its high-bandwidth memory supply for 2027 is already under contract at significantly higher prices. That's a year of visibility in an industry that usually has none. Second, its data center storage business, on the flash side, has become a major business of its own. AI is pulling on both halves of the company.</p>
+<p>Now the uncomfortable part. I trimmed Micron in January and twice in June under my size rule, and the stock is well above every price I sold at. My remaining shares are up about 360% from cost, but the position is much smaller than it would have been.</p>
+<p>Was trimming wrong? The rule did its job. It moved money out of a position that had grown too big, before July cut memory stocks by a third or more. But I trimmed a cyclical company before the cycle showed any sign of turning. My consensus rule should have told me to wait, and the size rule overrode it. Next time a position outgrows its target while its cycle is still tightening, I'll trim less.</p>
+<p>On current earnings, Micron is still the cheapest way I know to own AI memory. It stays, at about 6% of the account.</p>`
+},
+{
+  id:"p-2026-10-02-q3-review", date:"2026-10-02", cat:"portfolio", tickers:[],
+  title:"Third-quarter review",
+  dek:"Down 13% in a quarter the market rose. Still up about 88% for the year.",
+  body:`<p>The third quarter was the hardest stretch since I started this journal. The account fell about 13% on a time-weighted basis, while the S&amp;P 500 rose 2% and the semiconductor ETF fell 7%. For the year it's still up about 88%, against 12% for the S&amp;P 500 and 69% for the semiconductor ETF.</p>
+<h3>The shape of it</h3>
+<p>July: −23%. August: +7%. September: +6%. From the early-June high to the July 29 low, the account fell about 40%. Since that low it has recovered about 38%.</p>
+<h3>What worked</h3>
+<p>All figures below are as of September 30.</p>
+<ul><li><strong>Most of the July buys.</strong> AXT was up about 60% from my average cost, SK Hynix about 28%, and Marvell's July lot about 17%. As a group the July purchases were up about 13%, despite the timing.</li><li><strong>Selling AAOI in June.</strong> The stock ended the quarter about 46% below my average June sale price, and I bought part of it back far lower.</li></ul>
+<h3>What didn't</h3>
+<ul><li><strong>The June speculative buys.</strong> Planet Labs, One Stop and POET were down between 35% and 50% from cost.</li><li><strong>TeraWulf.</strong> Down about 30% from my July price.</li><li><strong>Pace.</strong> I spent all my cash in three weeks and had none left for the bottom.</li></ul>
+<h3>Lessons</h3>
+<ol><li>Small, unprofitable companies fall hardest in a rate scare. My speculative tier should stay smaller than it was in June.</li><li>Buying into a falling market needs a schedule as well as a price list.</li><li>A good business can still be a bad buy at the wrong price.</li></ol>
+<p>Going into the fourth quarter, cash is about 26% of the account across sixteen positions. The biggest group is optics, at about a quarter of the account.</p>`
+},
+{
+  id:"p-2026-10-09-where-things-stand", date:"2026-10-09", cat:"portfolio", tickers:["AAOI","AXTI","ALAB"],
+  title:"Where things stand",
+  dek:"A rough week for AI stocks, a record for the market, and a snapshot of the account.",
+  body:`<p>The S&amp;P 500 set a record on Tuesday. My account fell about 6% this week anyway, because the week's big story hit exactly what I own.</p>
+<h3>The OpenAI number</h3>
+<p>On Thursday the Financial Times reported that OpenAI's annualized revenue was about $50 billion at the end of September, roughly $20 billion less than a figure that had circulated widely. Most of the gap is accounting, since OpenAI doesn't count sales made through cloud partners the way Anthropic does. But OpenAI is the biggest single buyer behind a lot of AI infrastructure, and the market sold first. Chip stocks fell about 4% on the week, and AAOI, AXT and Astera Labs each lost 9% to 14% in a day.</p>
+<p>I didn't sell. The gap is about how revenue is counted, OpenAI is still growing very fast, and the same day Samsung guided to a record quarterly profit on memory demand. My sell signal hasn't changed since September: cuts to big-tech spending plans. None have come.</p>
+<h3>The rest of the world</h3>
+<p>September added only 29,000 jobs and unemployment rose to 4.2%, which lowered the odds of another Fed hike. The 10-year yield is still above 5.2%. Oil is near $90, and the war with Iran has no ceasefire in sight.</p>
+<h3>The account today</h3>
+<p>The account is worth about 36% more than the total money I've put in. On a time-weighted basis, which strips out when the cash went in, it's up about 84% this year against 14% for the S&amp;P 500.</p>
+<ul><li>Optics: 24%</li><li>Chips and networking: 15%</li><li>Memory and storage: 13%</li><li>Compute and sites: 9%</li><li>Power and cooling: 7%</li><li>Defense, space and minerals: 5%</li><li>Cash: 27%</li></ul>
+<h3>What's next</h3>
+<p>Third-quarter earnings start next week, and the big-tech spending updates come at the end of the month. The midterm elections are on November 3. I'll put cash to work only in steps, and never below the 10% floor.</p>`
+}
+];
+</script>
+<script>
+(function(){
+  "use strict";
+  var POSTS = POSTS_A.concat(POSTS_B).sort(function(a,b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
+  var BY_ID = {};
+  var CAT = {stock:"Stock", markets:"Markets", research:"Research", portfolio:"Portfolio"};
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var MINUS = "−";
+  var state = {cat:"all", q:"", ticker:null, listScroll:0, sort:"w"};
+
+  var scratch = document.createElement("div");
+  POSTS.forEach(function(p, i){
+    BY_ID[p.id] = p;
+    p.idx = i;
+    scratch.innerHTML = p.body;
+    var tk = (p.tickers || []).slice();
+    (p.spec || []).forEach(function(s){ if(tk.indexOf(s.t) === -1) tk.unshift(s.t); });
+    p.allTickers = tk;
+    p.hay = (p.title + " " + p.dek + " " + tk.join(" ") + " " + scratch.textContent).toLowerCase();
+  });
+
+  /* ---------- helpers ---------- */
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function parts(iso){ var p = iso.split("-"); return {y:+p[0], m:+p[1]-1, d:+p[2]}; }
+  function fmtLong(iso){ var p = parts(iso); return MONTHS[p.m] + " " + p.d + ", " + p.y; }
+  function fmtShort(iso){ var p = parts(iso); return MON[p.m] + " " + (p.d < 10 ? "0" : "") + p.d; }
+  function fmtMid(iso){ var p = parts(iso); return MON[p.m] + " " + p.d + ", " + p.y; }
+  function signed(v, d){
+    var n = Math.abs(v).toFixed(d == null ? 1 : d);
+    return (v > 0 ? "+" : (v < 0 ? MINUS : "")) + n + "%";
+  }
+  function cls(v){ return v > 0 ? "up" : (v < 0 ? "down" : ""); }
+
+  /* ---------- views ---------- */
+  var views = {journal:$("view-journal"), post:$("view-post"), portfolio:$("view-portfolio")};
+  function show(name){
+    Object.keys(views).forEach(function(k){ views[k].hidden = (k !== name); });
+    var navKey = name === "post" ? "journal" : name;
+    document.querySelectorAll(".nav a").forEach(function(a){
+      if(a.getAttribute("data-nav") === navKey) a.setAttribute("aria-current","page");
+      else a.removeAttribute("aria-current");
+    });
+  }
+
+  /* ---------- journal ---------- */
+  function renderLatest(){
+    var p = POSTS[0];
+    var chips = p.allTickers.map(function(t){ return '<a class="chip" href="#t-' + esc(t) + '">' + esc(t) + '</a>'; }).join("");
+    $("latest").innerHTML =
+      '<p class="meta"><span class="cat new">Latest</span><span class="sep" aria-hidden="true"></span><span class="cat">' + CAT[p.cat] + '</span><span class="sep" aria-hidden="true"></span><time datetime="' + p.date + '">' + fmtMid(p.date) + '</time></p>' +
+      '<h1 class="latest-title"><a href="#' + p.id + '">' + esc(p.title) + '</a></h1>' +
+      '<p class="dek">' + esc(p.dek) + '</p>' +
+      '<div class="row">' + (chips ? '<div class="chips">' + chips + '</div>' : '') + '<a class="more" href="#' + p.id + '">Read the post <span aria-hidden="true">&rarr;</span></a></div>';
+  }
+
+  function sparkPath(vals, w, h){
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var pad = 3, n = vals.length - 1;
+    var pts = vals.map(function(v, i){
+      var x = (i / n) * w;
+      var y = pad + (1 - (v - min) / (max - min || 1)) * (h - pad * 2);
+      return [x, y];
+    });
+    var line = pts.map(function(p, i){ return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join("");
+    var area = line + "L" + w + " " + h + "L0 " + h + "Z";
+    return {line:line, area:area, last:pts[pts.length - 1]};
+  }
+
+  function renderSnapshot(){
+    var vals = SERIES.acct.filter(function(v, i){ return i % 3 === 0 || i === SERIES.acct.length - 1; });
+    var sp = sparkPath(vals, 200, 36);
+    $("snapshot").innerHTML =
+      '<p class="label"><span>Account</span><span>' + fmtMid(ASOF).replace(/, \d+$/, "") + ' close</span></p>' +
+      '<dl class="kpis">' +
+        '<div class="kpi"><dt>Since start</dt><dd class="v ' + cls(SUMMARY.sinceStart) + '">' + signed(SUMMARY.sinceStart) + '</dd><dd class="cap">Account value vs. money put in</dd></div>' +
+        '<div class="kpi"><dt>2026 so far</dt><dd class="v ' + cls(SUMMARY.ytd) + '">' + signed(SUMMARY.ytd) + '</dd><dd class="cap">Time-weighted &middot; S&amp;P 500 ' + signed(SUMMARY.spxYtd) + '</dd>' +
+          '<dd class="spark" aria-hidden="true"><svg viewBox="0 0 200 36" preserveAspectRatio="none" width="100%" height="36"><path d="' + sp.area + '" fill="var(--accent)" fill-opacity=".1"/><path d="' + sp.line + '" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg></dd></div>' +
+        '<div class="kpi"><dt>Cash</dt><dd class="v">' + SUMMARY.cash.toFixed(1) + '%</dd><dd class="cap">' + SUMMARY.positions + ' positions</dd></div>' +
+      '</dl>' +
+      '<a class="more" href="#portfolio">Full portfolio <span aria-hidden="true">&rarr;</span></a>';
+  }
+
+  function matches(p){
+    if(state.cat !== "all" && p.cat !== state.cat) return false;
+    if(state.ticker && p.allTickers.indexOf(state.ticker) === -1) return false;
+    if(state.q){
+      var terms = state.q.split(/\s+/);
+      for(var i = 0; i < terms.length; i++){ if(terms[i] && p.hay.indexOf(terms[i]) === -1) return false; }
+    }
+    return true;
+  }
+
+  function renderList(){
+    var list = $("list");
+    var shown = POSTS.filter(matches);
+    var html = "", cur = "";
+    shown.forEach(function(p){
+      var d = parts(p.date), key = d.y + "-" + d.m;
+      if(key !== cur){
+        if(cur) html += "</section>";
+        html += '<section class="month"><h3 class="month-h">' + MONTHS[d.m] + " " + d.y + "</h3>";
+        cur = key;
+      }
+      var tks = p.allTickers.slice(0, 4).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join("");
+      if(p.allTickers.length > 4) tks += '<span class="chip">+' + (p.allTickers.length - 4) + '</span>';
+      html += '<a class="item" href="#' + p.id + '">' +
+        '<time class="d" datetime="' + p.date + '">' + fmtShort(p.date) + '</time>' +
+        '<div class="main"><span class="label cat">' + CAT[p.cat] + '</span><h4 class="ttl">' + esc(p.title) + '</h4><p class="dk">' + esc(p.dek) + '</p></div>' +
+        '<div class="tk">' + tks + '</div></a>';
+    });
+    if(cur) html += "</section>";
+    list.innerHTML = html;
+    $("empty").hidden = shown.length > 0;
+
+    var af = $("activeFilter");
+    if(state.ticker){
+      af.hidden = false;
+      af.innerHTML = '<span>Posts about</span><button type="button" class="clear" id="clearTicker" aria-label="Clear ticker filter ' + esc(state.ticker) + '">' + esc(state.ticker) + ' <span aria-hidden="true">&times;</span></button>';
+      $("clearTicker").addEventListener("click", function(){ location.hash = "journal"; });
+    } else {
+      af.hidden = true; af.innerHTML = "";
+    }
+    document.querySelectorAll("#seg button").forEach(function(b){ b.setAttribute("aria-pressed", String(b.getAttribute("data-cat") === state.cat)); });
+  }
+
+  document.querySelectorAll("#seg button").forEach(function(b){
+    b.addEventListener("click", function(){ state.cat = b.getAttribute("data-cat"); renderList(); });
+  });
+  $("q").addEventListener("input", function(e){ state.q = e.target.value.trim().toLowerCase(); renderList(); });
+  $("clearAll").addEventListener("click", function(){
+    state.cat = "all"; state.q = ""; $("q").value = "";
+    if(state.ticker){ location.hash = "journal"; } else { renderList(); }
+  });
+
+  /* ---------- post ---------- */
+  function specHtml(s){
+    return '<div class="spec"><div class="spec-head"><span class="spec-t">' + esc(s.t) + '</span><span class="spec-n">' + esc(s.name) + '</span><span class="spec-l">' + esc(s.layer) + '</span></div>' +
+      '<dl class="spec-rows">' +
+        '<div><dt>What it does</dt><dd>' + esc(s.does) + '</dd></div>' +
+        '<div><dt>Move</dt><dd>' + esc(s.move) + '</dd></div>' +
+        '<div><dt>Watching</dt><dd>' + esc(s.watch) + '</dd></div>' +
+      '</dl></div>';
+  }
+
+  function renderPost(p){
+    var older = POSTS[p.idx + 1], newer = POSTS[p.idx - 1];
+    var chips = p.allTickers.map(function(t){ return '<a class="chip" href="#t-' + esc(t) + '">' + esc(t) + '</a>'; }).join("");
+    var pager = '<nav class="pager" aria-label="More posts">' +
+      (older ? '<a class="prev" href="#' + older.id + '"><span class="label dir">&larr; Older</span><span class="pt">' + esc(older.title) + '</span></a>' : '') +
+      (newer ? '<a class="next" href="#' + newer.id + '"><span class="label dir">Newer &rarr;</span><span class="pt">' + esc(newer.title) + '</span></a>' : '') +
+      '</nav>';
+    $("postRoot").innerHTML =
+      '<a class="back" href="#' + (state.listHash || "journal") + '"><span aria-hidden="true">&larr;</span> ' + (state.ticker ? "Posts about " + esc(state.ticker) : "Journal") + '</a>' +
+      '<article>' +
+        '<p class="meta"><span class="cat">' + CAT[p.cat] + '</span><span class="sep" aria-hidden="true"></span><time datetime="' + p.date + '">' + fmtLong(p.date) + '</time></p>' +
+        '<h1 class="post-title">' + esc(p.title) + '</h1>' +
+        '<p class="post-dek">' + esc(p.dek) + '</p>' +
+        (p.spec ? '<div class="specs">' + p.spec.map(specHtml).join("") + '</div>' : '') +
+        '<div class="prose">' + p.body + '</div>' +
+      '</article>' +
+      '<div class="post-foot">' + (chips ? '<div class="chips" aria-label="Tickers in this post">' + chips + '</div>' : '') + pager + '</div>';
+    document.title = p.title + " · Bottleneck";
+  }
+
+  /* ---------- portfolio ---------- */
+  function layerTotals(){
+    var t = {};
+    LAYERS.forEach(function(l){ t[l] = {w:0, tk:[]}; });
+    HOLDINGS.forEach(function(h){ t[h.layer].w += h.w; t[h.layer].tk.push(h.t); });
+    return LAYERS.map(function(l){ return {name:l, w:t[l].w, tk:t[l].tk}; }).sort(function(a,b){ return b.w - a.w; });
+  }
+
+  function renderPortfolio(){
+    var layers = layerTotals();
+    var maxW = Math.max(SUMMARY.cash, layers[0].w);
+    var alloc = layers.map(function(l){
+      return '<div class="arow"><div class="aname">' + esc(l.name) + '<span class="atk">' + l.tk.join(" · ") + '</span></div>' +
+        '<div class="abar" aria-hidden="true"><i style="width:' + (l.w / maxW * 100).toFixed(1) + '%"></i></div>' +
+        '<div class="aval">' + l.w.toFixed(1) + '%</div></div>';
+    }).join("") +
+      '<div class="arow cash"><div class="aname">Cash<span class="atk">Money market</span></div><div class="abar" aria-hidden="true"><i style="width:' + (SUMMARY.cash / maxW * 100).toFixed(1) + '%"></i></div><div class="aval">' + SUMMARY.cash.toFixed(1) + '%</div></div>';
+
+    var months = MONTHLY.map(function(m){ return '<th scope="col">' + m[0] + (m[0] === "Oct" ? "*" : "") + '</th>'; }).join("");
+    function mrow(label, idx, ytd, main){
+      return '<tr' + (main ? ' class="main"' : '') + '><td>' + label + '</td>' + MONTHLY.map(function(m){ return '<td class="' + cls(m[idx]) + '">' + signed(m[idx]) + '</td>'; }).join("") + '<td class="ytd ' + cls(ytd) + '">' + signed(ytd) + '</td></tr>';
+    }
+
+    $("pfRoot").innerHTML =
+      '<div class="page-head"><h1 class="page-title">Portfolio</h1><p class="asof">As of the ' + fmtLong(ASOF) + ' close</p></div>' +
+      '<div class="kpi-strip">' +
+        '<div class="tile"><span class="label">Since start</span><span class="v ' + cls(SUMMARY.sinceStart) + '">' + signed(SUMMARY.sinceStart) + '</span><span class="cap">Account value vs. money put in</span></div>' +
+        '<div class="tile"><span class="label">2026 so far</span><span class="v ' + cls(SUMMARY.ytd) + '">' + signed(SUMMARY.ytd) + '</span><span class="cap">Time-weighted &middot; S&amp;P 500 ' + signed(SUMMARY.spxYtd) + '</span></div>' +
+        '<div class="tile"><span class="label">Cash</span><span class="v">' + SUMMARY.cash.toFixed(1) + '%</span><span class="cap">Of the account</span></div>' +
+        '<div class="tile"><span class="label">Positions</span><span class="v">' + SUMMARY.positions + '</span><span class="cap">Plus cash</span></div>' +
+      '</div>' +
+      '<section class="card" aria-labelledby="perfTitle">' +
+        '<div class="card-head"><div><h2 class="card-title" id="perfTitle">2026 return</h2><p class="card-sub">Time-weighted, from December 31, 2025</p></div>' +
+          '<ul class="legend" aria-hidden="true">' +
+            '<li><span class="key" style="background:var(--accent)"></span>Account</li>' +
+            '<li><span class="key" style="background:var(--ctx-1)"></span>Semiconductor ETF (SMH)</li>' +
+            '<li><span class="key" style="background:var(--ctx-2)"></span>S&amp;P 500</li>' +
+          '</ul></div>' +
+        '<div class="chart" id="chart" tabindex="0" role="img" aria-label="Line chart of 2026 time-weighted returns. Account up ' + SUMMARY.ytd + ' percent, semiconductor ETF up ' + SUMMARY.smhYtd + ' percent, S&amp;P 500 up ' + SUMMARY.spxYtd + ' percent. The account peaked near plus 127 percent on June 2 and fell to plus 36 percent on July 29. Monthly figures are in the table below."></div>' +
+        '<div class="table-wrap"><table class="monthly"><caption class="sr">Monthly returns in 2026</caption><thead><tr><th scope="col">Month</th>' + months + '<th scope="col">2026</th></tr></thead><tbody>' +
+          mrow("Account", 1, SUMMARY.ytd, true) + mrow("SMH", 3, SUMMARY.smhYtd) + mrow("S&amp;P 500", 2, SUMMARY.spxYtd) +
+        '</tbody></table></div>' +
+      '</section>' +
+      '<section class="card" aria-labelledby="allocTitle"><div class="card-head"><h2 class="card-title" id="allocTitle">Where the money sits</h2><p class="card-sub">Share of the account by layer of the AI buildout</p></div><div class="alloc">' + alloc + '</div></section>' +
+      '<section class="card" aria-labelledby="holdTitle"><div class="card-head"><h2 class="card-title" id="holdTitle">Holdings</h2><p class="card-sub">Select a row to read every post about it</p></div><div class="hold-wrap" id="holdWrap"></div></section>' +
+      '<p class="note">* October through the 9th. Return vs. cost uses the brokerage cost basis. Time-weighted returns remove the effect of when cash was added.</p>';
+    renderHoldings();
+    renderChart();
+  }
+
+  function renderHoldings(){
+    var rows = HOLDINGS.slice().sort(function(a,b){ return state.sort === "r" ? b.r - a.r : b.w - a.w; });
+    var maxW = HOLDINGS.reduce(function(m,h){ return Math.max(m, h.w); }, SUMMARY.cash);
+    var body = rows.map(function(h){
+      return '<tr data-t="' + h.t + '" tabindex="0" aria-label="' + esc(h.name) + ', ' + h.w.toFixed(1) + ' percent of account, ' + signed(h.r) + ' versus cost. Open posts.">' +
+        '<td class="tkr">' + h.t + '</td>' +
+        '<td class="co">' + esc(h.name) + '</td>' +
+        '<td class="ly">' + esc(h.layer) + '</td>' +
+        '<td class="r"><div class="wcell"><span class="wbar" aria-hidden="true"><i style="width:' + (h.w / maxW * 100).toFixed(1) + '%"></i></span><span class="num">' + h.w.toFixed(1) + '%</span></div></td>' +
+        '<td class="r ret ' + cls(h.r) + '">' + signed(h.r) + '</td></tr>';
+    }).join("") +
+      '<tr class="cashrow"><td class="tkr">CASH</td><td class="co">Money market</td><td class="ly">&nbsp;</td><td class="r"><div class="wcell"><span class="wbar" aria-hidden="true"><i style="width:' + (SUMMARY.cash / maxW * 100).toFixed(1) + '%"></i></span><span class="num">' + SUMMARY.cash.toFixed(1) + '%</span></div></td><td class="r ret">&nbsp;</td></tr>';
+    $("holdWrap").innerHTML = '<table class="holdings"><thead><tr>' +
+      '<th scope="col">Ticker</th><th scope="col">Company</th><th scope="col" class="ly">Layer</th>' +
+      '<th scope="col" class="r"><button type="button" data-sort="w" aria-pressed="' + (state.sort === "w") + '">Weight</button></th>' +
+      '<th scope="col" class="r"><button type="button" data-sort="r" aria-pressed="' + (state.sort === "r") + '">Vs. cost</button></th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table>';
+    $("holdWrap").querySelectorAll("th button").forEach(function(b){
+      b.addEventListener("click", function(){ state.sort = b.getAttribute("data-sort"); renderHoldings(); });
+    });
+    $("holdWrap").querySelectorAll("tbody tr[data-t]").forEach(function(tr){
+      function go(){ location.hash = "t-" + tr.getAttribute("data-t"); }
+      tr.addEventListener("click", go);
+      tr.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } });
+    });
+  }
+
+  /* ---------- chart ---------- */
+  var chartTimer = null, chartW = 0;
+  function niceStep(range, target){
+    var raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+    var nf = f < 1.5 ? 1 : (f < 3 ? 2 : (f < 7 ? 5 : 10));
+    return nf * mag;
+  }
+  function renderChart(){
+    var box = $("chart");
+    if(!box || views.portfolio.hidden) return;
+    var W = box.clientWidth; if(!W) return;
+    chartW = W;
+    var narrow = W < 560;
+    var H = narrow ? 230 : 320;
+    var m = {t:14, r: narrow ? 10 : 150, b:28, l:40};
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var ts = SERIES.dates.map(function(d){ var p = parts(d); return Date.UTC(p.y, p.m, p.d); });
+    var t0 = ts[0], t1 = Date.UTC(2026, 9, 31);
+    var all = SERIES.acct.concat(SERIES.spx, SERIES.smh);
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var step = niceStep(hi - lo, narrow ? 4 : 6);
+    var y0 = Math.floor(lo / step) * step, y1 = Math.ceil(hi / step) * step;
+    function X(t){ return m.l + (t - t0) / (t1 - t0) * iw; }
+    function Y(v){ return m.t + (1 - (v - y0) / (y1 - y0)) * ih; }
+    function path(arr){ return arr.map(function(v, i){ return (i ? "L" : "M") + X(ts[i]).toFixed(1) + " " + Y(v).toFixed(1); }).join(""); }
+
+    var s = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">';
+    for(var v = y0; v <= y1 + 1e-9; v += step){
+      var yy = Y(v).toFixed(1);
+      s += '<line x1="' + m.l + '" x2="' + (m.l + iw) + '" y1="' + yy + '" y2="' + yy + '" stroke="' + (Math.abs(v) < 1e-9 ? "var(--rule-2)" : "var(--grid)") + '" stroke-width="1"/>';
+      s += '<text x="' + (m.l - 8) + '" y="' + yy + '" dy="0.32em" text-anchor="end" font-size="11" fill="var(--muted)" style="font-variant-numeric:tabular-nums">' + (v > 0 ? "+" : (v < 0 ? MINUS : "")) + Math.abs(v) + '%</text>';
+    }
+    for(var mo = 0; mo < 10; mo++){
+      var tx = X(Date.UTC(2026, mo, 1));
+      if(narrow && mo % 2 === 1) continue;
+      s += '<text x="' + tx.toFixed(1) + '" y="' + (H - 8) + '" font-size="11" fill="var(--muted)">' + MON[mo] + '</text>';
+      s += '<line x1="' + tx.toFixed(1) + '" x2="' + tx.toFixed(1) + '" y1="' + (m.t + ih) + '" y2="' + (m.t + ih + 4) + '" stroke="var(--rule-2)"/>';
+    }
+    s += '<path d="' + path(SERIES.spx) + '" fill="none" stroke="var(--ctx-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + path(SERIES.smh) + '" fill="none" stroke="var(--ctx-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + path(SERIES.acct) + '" fill="none" stroke="var(--accent)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>';
+
+    var n = ts.length - 1;
+    if(!narrow){
+      var pk = 0, tr = 0;
+      SERIES.acct.forEach(function(v, i){ if(v > SERIES.acct[pk]) pk = i; });
+      tr = pk; for(var i = pk; i <= n; i++){ if(SERIES.acct[i] < SERIES.acct[tr]) tr = i; }
+      [[pk, "High, " + fmtShort(SERIES.dates[pk]).replace(" 0", " "), -12], [tr, "Low, " + fmtShort(SERIES.dates[tr]).replace(" 0", " "), 20]].forEach(function(a){
+        var px = X(ts[a[0]]), py = Y(SERIES.acct[a[0]]);
+        s += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+        s += '<text x="' + px.toFixed(1) + '" y="' + (py + a[2]).toFixed(1) + '" text-anchor="middle" font-size="11" fill="var(--ink-2)">' + a[1] + " " + signed(SERIES.acct[a[0]], 0) + '</text>';
+      });
+      var ends = [["Account", SERIES.acct[n], "var(--accent)", "var(--ink)"], ["SMH", SERIES.smh[n], "var(--ctx-1)", "var(--ink-2)"], ["S&amp;P 500", SERIES.spx[n], "var(--ctx-2)", "var(--ink-2)"]];
+      var placed = [];
+      ends.forEach(function(e){
+        var ey = Y(e[1]), ly = ey;
+        placed.forEach(function(p){ if(Math.abs(ly - p) < 16) ly = p + (ly >= p ? 16 : -16); });
+        placed.push(ly);
+        var ex = X(ts[n]);
+        s += '<circle cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="4" fill="' + e[2] + '" stroke="var(--surface)" stroke-width="2"/>';
+        if(Math.abs(ly - ey) > 1) s += '<line x1="' + (ex + 6) + '" x2="' + (ex + 12) + '" y1="' + ey.toFixed(1) + '" y2="' + ly.toFixed(1) + '" stroke="var(--rule-2)"/>';
+        s += '<text x="' + (ex + 14) + '" y="' + ly.toFixed(1) + '" dy="0.32em" font-size="12" fill="' + e[3] + '"><tspan font-weight="650" style="font-variant-numeric:tabular-nums">' + signed(e[1], 1) + '</tspan><tspan dx="6" fill="var(--muted)">' + e[0] + '</tspan></text>';
+      });
+    } else {
+      s += '<circle cx="' + X(ts[n]).toFixed(1) + '" cy="' + Y(SERIES.acct[n]).toFixed(1) + '" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+    }
+    s += '<g class="hover" visibility="hidden"><line class="hx" y1="' + m.t + '" y2="' + (m.t + ih) + '" stroke="var(--ink-2)" stroke-width="1" stroke-opacity=".5"/>' +
+      '<circle class="h0" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><circle class="h1" r="4" fill="var(--ctx-1)" stroke="var(--surface)" stroke-width="2"/><circle class="h2" r="4" fill="var(--ctx-2)" stroke="var(--surface)" stroke-width="2"/></g>';
+    s += '<rect class="hit" x="' + m.l + '" y="' + m.t + '" width="' + iw + '" height="' + ih + '" fill="transparent"/>';
+    s += '</svg><div class="tip" hidden></div>';
+    box.innerHTML = s;
+
+    var svg = box.querySelector("svg"), g = box.querySelector(".hover"), tip = box.querySelector(".tip");
+    var cur = n;
+    function place(i){
+      cur = Math.max(0, Math.min(n, i));
+      var x = X(ts[cur]);
+      g.setAttribute("visibility", "visible");
+      g.querySelector(".hx").setAttribute("x1", x); g.querySelector(".hx").setAttribute("x2", x);
+      [["h0", SERIES.acct], ["h1", SERIES.smh], ["h2", SERIES.spx]].forEach(function(a){
+        var c = g.querySelector("." + a[0]); c.setAttribute("cx", x); c.setAttribute("cy", Y(a[1][cur]));
+      });
+      tip.hidden = false;
+      tip.innerHTML = "";
+      var td = document.createElement("p"); td.className = "td"; td.textContent = fmtMid(SERIES.dates[cur]); tip.appendChild(td);
+      [["Account", SERIES.acct, "var(--accent)"], ["SMH", SERIES.smh, "var(--ctx-1)"], ["S&P 500", SERIES.spx, "var(--ctx-2)"]].forEach(function(a){
+        var row = document.createElement("div"); row.className = "tr";
+        var k = document.createElement("span"); k.className = "key"; k.style.background = a[2];
+        var v = document.createElement("span"); v.className = "tv"; v.textContent = signed(a[1][cur]);
+        var l = document.createElement("span"); l.className = "tl"; l.textContent = a[0];
+        row.appendChild(k); row.appendChild(v); row.appendChild(l); tip.appendChild(row);
+      });
+      var tw = tip.offsetWidth, left = x + 14;
+      if(left + tw > W) left = x - tw - 14;
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top = (m.t + 4) + "px";
+    }
+    function hide(){ g.setAttribute("visibility", "hidden"); tip.hidden = true; }
+    function nearest(clientX){
+      var r = svg.getBoundingClientRect(), x = clientX - r.left;
+      var t = t0 + (x - m.l) / iw * (t1 - t0), best = 0, bd = Infinity;
+      for(var i = 0; i <= n; i++){ var dd = Math.abs(ts[i] - t); if(dd < bd){ bd = dd; best = i; } }
+      return best;
+    }
+    var hit = box.querySelector(".hit");
+    hit.addEventListener("pointermove", function(e){ place(nearest(e.clientX)); });
+    hit.addEventListener("pointerdown", function(e){ place(nearest(e.clientX)); });
+    hit.addEventListener("pointerleave", hide);
+    box.onkeydown = function(e){
+      if(e.key === "ArrowLeft"){ e.preventDefault(); place(cur - 1); }
+      else if(e.key === "ArrowRight"){ e.preventDefault(); place(cur + 1); }
+      else if(e.key === "Home"){ e.preventDefault(); place(0); }
+      else if(e.key === "End"){ e.preventDefault(); place(n); }
+      else if(e.key === "Escape"){ hide(); }
+    };
+    box.onfocus = function(){ place(cur); };
+    box.onblur = hide;
+  }
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){
+      var c = $("chart");
+      if(!c || views.portfolio.hidden || c.clientWidth === chartW) return;
+      clearTimeout(chartTimer); chartTimer = setTimeout(renderChart, 120);
+    }).observe(document.body);
+  } else {
+    window.addEventListener("resize", function(){ clearTimeout(chartTimer); chartTimer = setTimeout(renderChart, 120); });
+  }
+
+  /* ---------- router ---------- */
+  var lastView = "journal";
+  function route(){
+    var h = (location.hash || "").replace(/^#/, "");
+    if(lastView === "journal" && !views.journal.hidden) state.listScroll = window.scrollY;
+    if(h.indexOf("p-") === 0 && BY_ID[h]){
+      renderPost(BY_ID[h]); show("post"); lastView = "post"; window.scrollTo(0, 0); return;
+    }
+    document.title = "Bottleneck";
+    if(h === "portfolio"){
+      show("portfolio"); renderPortfolio(); lastView = "portfolio"; window.scrollTo(0, 0); return;
+    }
+    var restore = (lastView === "post");
+    if(h.indexOf("t-") === 0){
+      state.ticker = h.slice(2).toUpperCase(); state.cat = "all"; restore = false;
+    } else {
+      state.ticker = null;
+    }
+    state.listHash = h || "journal";
+    renderList(); show("journal");
+    if(h.indexOf("t-") === 0){
+      var a = document.querySelector(".archive");
+      window.scrollTo(0, a ? a.getBoundingClientRect().top + window.scrollY - 70 : 0);
+    } else {
+      window.scrollTo(0, restore ? state.listScroll : 0);
+    }
+    lastView = "journal";
+  }
+
+  renderLatest();
+  renderSnapshot();
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
+</body>
+</html>
