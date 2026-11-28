@@ -124,7 +124,7 @@
     var list = upcoming(Date.now()).slice(0, 3);
     box.innerHTML = list.map(function(e){
       var c = countdown(e, Date.now());
-      return '<a class="ev-card" href="' + ROOT + 'calendar.html#' + e.id + '"><span class="ev-when"><span class="label">' + eventDow(e) + ' ' + fmtDay(e.when) + '</span><span class="cd' + (c.soon ? " soon" : "") + '" data-ev="' + e.id + '">' + c.txt + '</span></span><span class="ttl">' + esc(e.title) + '</span><span class="dk">' + esc(e.why) + '</span></a>';
+      return '<a class="ev-card" href="' + ROOT + 'calendar.html#' + e.id + '"><span class="ev-when"><span class="label">' + eventDow(e) + ' ' + fmtDay(e.when) + '</span><span class="cd' + (c.soon ? " soon" : "") + '" data-ev="' + e.id + '">' + c.txt + '</span></span><span class="ttl">' + esc(e.title) + '</span><span class="dk">' + (e.call ? '<span class="label">My call</span> ' + esc(e.call) : esc(e.why)) + '</span></a>';
     }).join("") || '<p class="empty">No upcoming events listed.</p>';
   }
 
@@ -513,13 +513,16 @@
         (h ? '<span class="asof">' + esc(h.layer) + '</span>' : '') + (th.since ? '<span class="asof">Held since ' + esc(th.since) + '</span>' : '') + '</div></div>' +
       '<div class="kpi-strip">' + tiles + '</div>' +
       '<div class="tp-grid"><section class="card tp-block"><h2 class="label">The thesis</h2><p>' + esc(th.thesis) + '</p></section><section class="card tp-block"><h2 class="label">' + (th.status === "Closed" ? "Why I sold" : "What would change my mind") + '</h2><p>' + esc(th.trigger) + '</p></section></div>' +
-      (evs.length ? '<section class="card"><div class="card-head"><h2 class="card-title">Coming up</h2><a class="more" href="' + ROOT + 'calendar.html">Full calendar <span aria-hidden="true">&rarr;</span></a></div><ul class="tline">' + evs.map(function(e){ return '<li><span class="d">' + fmtShort(e.when) + '</span><span><a href="' + ROOT + 'calendar.html#' + e.id + '">' + esc(e.title) + '</a><span class="dk">' + esc(e.watch) + '</span></span><span class="since">' + countdown(e, Date.now()).txt + '</span></li>'; }).join("") + '</ul></section>' : '') +
+      (evs.length ? '<section class="card"><div class="card-head"><h2 class="card-title">Coming up</h2><a class="more" href="' + ROOT + 'calendar.html">Full calendar <span aria-hidden="true">&rarr;</span></a></div><ul class="tline">' + evs.map(function(e){ return '<li><span class="d">' + fmtShort(e.when) + '</span><span><a href="' + ROOT + 'calendar.html#' + e.id + '">' + esc(e.title) + '</a><span class="dk">' + (e.call ? 'My call: ' + esc(e.call) : esc(e.watch)) + '</span></span><span class="since">' + countdown(e, Date.now()).txt + '</span></li>'; }).join("") + '</ul></section>' : '') +
       (a ? '<section class="card"><div class="card-head"><div><h2 class="card-title">' + t + ' in 2026</h2><p class="card-sub">Price change' + (baseDate > SERIES.dates[0] ? " since listing on " + fmtMid(baseDate) : " from December 31, 2025") + '. Up arrows are buys and adds, down arrows are trims and sales.</p></div></div><div class="chart" id="tpChart" tabindex="0" role="img" aria-label="Price change for ' + t + ' in 2026 with trade markers"></div></section>' : '') +
       '<section class="card"><div class="card-head"><h2 class="card-title">Timeline</h2><p class="card-sub">Every post and trade, newest first</p></div><ul class="tline">' + tl + '</ul></section>';
     renderStockChart(t);
   }
 
   /* ---------- calendar ---------- */
+  var GRADE = {right:"Right", partly:"Partly", wrong:"Wrong"};
+  var calFilter = "all";
+  function callLine(e){ return e.call ? '<p class="ev-call"><span class="label">My call</span> ' + esc(e.call) + '</p>' : ''; }
   function renderCalendar(){
     var now = Date.now(), list = upcoming(now), next = list[0];
     var passedUnwritten = (EVENTS.upcoming || []).filter(function(e){ return countdown(e, now).past; });
@@ -527,24 +530,46 @@
     function row(e){
       var c = countdown(e, now);
       return '<li class="ev" id="' + e.id + '"><div class="ev-date"><span class="ev-day">' + fmtDay(e.when) + '</span><span class="ev-dow">' + eventDow(e) + ' &middot; ' + eventTime(e) + '</span></div>' +
-        '<div class="ev-body"><h3 class="ev-title">' + esc(e.title) + (e.tentative ? ' <span class="ev-tag">Not confirmed</span>' : '') + '</h3><p class="ev-why">' + esc(e.why) + '</p><p class="ev-watch"><span class="label">What I&rsquo;m watching</span> ' + esc(e.watch) + '</p>' + (chips(e) ? '<div class="chips">' + chips(e) + '</div>' : '') + '</div>' +
+        '<div class="ev-body"><h3 class="ev-title">' + esc(e.title) + (e.tentative ? ' <span class="ev-tag">Not confirmed</span>' : '') + '</h3><p class="ev-why">' + esc(e.why) + '</p>' + callLine(e) +
+        '<p class="ev-watch"><span class="label">What I&rsquo;m watching</span> ' + esc(e.watch) + '</p>' + (chips(e) ? '<div class="chips">' + chips(e) + '</div>' : '') + '</div>' +
         '<div class="ev-cd"><span class="cd' + (c.soon ? " soon" : "") + '" data-ev="' + e.id + '">' + c.txt + '</span></div></li>';
     }
     var hero = next ? '<section class="ev-hero" id="' + next.id + '" aria-label="Next event"><span class="label">Next up &middot; ' + eventDow(next) + ' ' + fmtMid(next.when) + ' &middot; ' + eventTime(next) + '</span>' +
-      '<h2 class="ev-hero-title">' + esc(next.title) + (next.tentative ? ' <span class="ev-tag">Not confirmed</span>' : '') + '</h2><p class="ev-why">' + esc(next.why) + '</p>' +
+      '<h2 class="ev-hero-title">' + esc(next.title) + (next.tentative ? ' <span class="ev-tag">Not confirmed</span>' : '') + '</h2><p class="ev-why">' + esc(next.why) + '</p>' + callLine(next) +
       '<p class="ev-watch"><span class="label">What I&rsquo;m watching</span> ' + esc(next.watch) + '</p>' + (chips(next) ? '<div class="chips">' + chips(next) + '</div>' : '') +
       '<p class="ev-hero-cd"><span class="cd-big" data-ev="' + next.id + '">' + countdown(next, now).txt + '</span></p></section>' : '';
     $("root").innerHTML =
       '<div class="page-head"><h1 class="page-title">Calendar</h1><p class="asof">Times are Eastern &middot; updated ' + fmtMid(EVENTS.updated) + '</p></div>' +
-      '<p class="lede">Upcoming events that could move my holdings, what I&rsquo;m watching for in each, and how past events turned out.</p>' + hero +
+      '<p class="lede">Upcoming events that could move my holdings, my call on each one, and how past calls turned out.</p>' + hero +
       (list.length > 1 ? '<section class="th-group"><h2 class="label">After that</h2><ul class="evs">' + list.slice(1).map(row).join("") + '</ul></section>' : '') +
-      (passedUnwritten.length ? '<section class="th-group"><h2 class="label">Just happened</h2><ul class="evs">' + passedUnwritten.map(function(e){ return '<li class="ev"><div class="ev-date"><span class="ev-day">' + fmtDay(e.when) + '</span><span class="ev-dow">' + eventDow(e) + '</span></div><div class="ev-body"><h3 class="ev-title">' + esc(e.title) + '</h3><p class="ev-why">My write-up is coming.</p></div><div class="ev-cd"><span class="cd">Done</span></div></li>'; }).join("") + '</ul></section>' : '') +
-      '<section class="th-group"><h2 class="label">Past</h2><ul class="evs">' + (EVENTS.past || []).map(function(e){
-        var p = BY_ID[e.post];
-        return '<li class="ev past"><div class="ev-date"><span class="ev-day">' + fmtDay(e.when) + '</span><span class="ev-dow">' + eventDow(e) + '</span></div><div class="ev-body"><h3 class="ev-title">' + esc(e.title) + '</h3><p class="ev-why">' + esc(e.happened) + '</p>' +
-          (p ? '<a class="ev-take" href="' + postUrl(p) + '"><span class="label">My post</span> ' + esc(p.title) + ' <span aria-hidden="true">&rarr;</span></a>' : '') + '</div></li>';
-      }).join("") + '</ul></section>';
+      (passedUnwritten.length ? '<section class="th-group"><h2 class="label">Just happened</h2><ul class="evs">' + passedUnwritten.map(function(e){ return '<li class="ev"><div class="ev-date"><span class="ev-day">' + fmtDay(e.when) + '</span><span class="ev-dow">' + eventDow(e) + '</span></div><div class="ev-body"><h3 class="ev-title">' + esc(e.title) + '</h3>' + callLine(e) + '<p class="ev-why">Graded in my next update.</p></div><div class="ev-cd"><span class="cd">Done</span></div></li>'; }).join("") + '</ul></section>' : '') +
+      '<section class="th-group" id="pastCalls" aria-labelledby="pastTitle"><h2 class="label" id="pastTitle">Past calls</h2><div id="score"></div><div id="pastList"></div></section>';
+    renderPast();
     if(location.hash){ var el = document.getElementById(location.hash.slice(1)); if(el){ el.classList.add("hl"); el.scrollIntoView(); } }
+  }
+  function renderPast(){
+    var past = EVENTS.past || [], graded = past.filter(function(e){ return e.grade; }), n = {right:0, partly:0, wrong:0};
+    graded.forEach(function(e){ n[e.grade]++; });
+    var live = graded.filter(function(e){ return EVENTS.liveSince && e.when >= EVENTS.liveSince; }), liveRight = live.filter(function(e){ return e.grade === "right"; }).length;
+    var tot = graded.length || 1;
+    $("score").innerHTML =
+      '<div class="score"><div class="score-nums">' + ["right", "partly", "wrong"].map(function(g){ return '<span class="score-n"><b class="g-' + g + '">' + n[g] + '</b> ' + GRADE[g].toLowerCase() + '</span>'; }).join("") +
+        '<span class="score-pct">' + Math.round(n.right / tot * 100) + '% right</span></div>' +
+        '<div class="score-bar" aria-hidden="true">' + ["right", "partly", "wrong"].map(function(g){ return '<i class="g-' + g + '" style="width:' + (n[g] / tot * 100).toFixed(1) + '%"></i>'; }).join("") + '</div>' +
+        '<div class="seg" role="group" aria-label="Filter past calls" id="gradeSeg">' + [["all", "All"], ["right", "Right"], ["partly", "Partly"], ["wrong", "Wrong"]].map(function(f){ return '<button type="button" data-g="' + f[0] + '" aria-pressed="' + (calFilter === f[0]) + '">' + f[1] + '</button>'; }).join("") + '</div></div>' +
+      '<p class="note">' + (live.length ? 'Since ' + fmtLong(EVENTS.liveSince) + ', ' + liveRight + ' of ' + live.length + ' calls were right. ' : '') +
+        'Calls on events before ' + fmtLong(EVENTS.liveSince) + ' were added later, using only what was known before each event.</p>';
+    var shownPast = past.filter(function(e){ return calFilter === "all" || e.grade === calFilter; }), cur = "", html = "";
+    shownPast.forEach(function(e){
+      var d = parts(e.when), key = d.y + "-" + d.m, p = BY_ID[e.post];
+      if(key !== cur){ html += (cur ? '</ul>' : '') + '<h3 class="month-h ev-mh">' + MONTHS[d.m] + ' ' + d.y + '</h3><ul class="evs">'; cur = key; }
+      html += '<li class="ev past"><div class="ev-date"><span class="ev-day">' + fmtDay(e.when) + '</span><span class="ev-dow">' + eventDow(e) + '</span></div>' +
+        '<div class="ev-body"><h3 class="ev-title">' + esc(e.title) + '</h3>' + callLine(e) + '<p class="ev-why">' + esc(e.happened) + '</p>' +
+        (p ? '<a class="ev-take" href="' + postUrl(p) + '"><span class="label">My post</span> ' + esc(p.title) + ' <span aria-hidden="true">&rarr;</span></a>' : '') + '</div>' +
+        '<div class="ev-cd">' + (e.grade ? '<span class="grade g-' + e.grade + '">' + GRADE[e.grade] + '</span>' : '') + '</div></li>';
+    });
+    $("pastList").innerHTML = (html ? html + '</ul>' : '<p class="empty">No calls match.</p>');
+    document.querySelectorAll("#gradeSeg button").forEach(function(b){ b.addEventListener("click", function(){ calFilter = b.getAttribute("data-g"); renderPast(); }); });
   }
   function tickCalendar(){
     var now = Date.now();

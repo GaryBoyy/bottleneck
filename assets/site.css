@@ -540,7 +540,6 @@ table{border-collapse:collapse;width:100%}
 .ev-watch .label{margin-right:4px}
 .ev .chips{margin-top:10px}
 .ev-cd{padding-top:2px;text-align:right}
-.ev.past{grid-template-columns:128px minmax(0,1fr)}
 .ev.past .ev-title{color:var(--ink-2)}
 .ev-take{display:inline-block;margin-top:8px;font-family:var(--f-display);font-weight:600;font-size:.9375rem;color:var(--accent-ink);text-decoration:none}
 .ev-take .label{margin-right:4px}
@@ -550,11 +549,39 @@ table{border-collapse:collapse;width:100%}
   .ev-grid{grid-template-columns:1fr}
 }
 @media (max-width:640px){
-  .ev,.ev.past{grid-template-columns:72px minmax(0,1fr);gap:6px 14px}
+  .ev{grid-template-columns:72px minmax(0,1fr);gap:6px 14px}
   .ev-cd{grid-column:2;text-align:left}
+  .ev.past .ev-body{grid-column:2;grid-row:1 / span 2}
+  .ev.past .ev-cd{grid-column:1;grid-row:2}
   .ev-hero{padding:18px 16px 20px}
 }
 @media (max-width:420px){
   .nav{gap:0}
   .nav a{padding:16px 5px 14px;font-size:.8125rem}
 }
+
+/* ---------- Calls on the calendar ---------- */
+.ev-call{margin:8px 0 0;font-size:.9375rem;line-height:1.45;color:var(--ink)}
+.ev-call .label{color:var(--accent-ink);margin-right:4px}
+.ev.past .ev-call{margin-top:2px}
+.ev.past .ev-call + .ev-why{margin-top:4px}
+.ev-card .dk .label{color:var(--accent-ink);margin-right:2px}
+.grade{display:inline-block;font-family:var(--f-display);font-size:.75rem;font-weight:650;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap}
+.grade.g-right{color:var(--up);background:color-mix(in srgb,var(--up) 13%,transparent)}
+.grade.g-partly{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.grade.g-wrong{color:var(--down);background:color-mix(in srgb,var(--down) 13%,transparent)}
+.score{display:grid;gap:12px;margin:4px 0 10px}
+.score-nums{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px;font-family:var(--f-display);font-size:.9375rem;color:var(--ink-2)}
+.score-n b{font-family:var(--f-mono);font-size:1.625rem;font-weight:600;margin-right:3px;font-variant-numeric:tabular-nums}
+.score-n b.g-right{color:var(--up)}
+.score-n b.g-partly{color:var(--warn)}
+.score-n b.g-wrong{color:var(--down)}
+.score-pct{margin-left:auto;font-family:var(--f-mono);font-size:.9375rem;font-weight:600;color:var(--ink)}
+.score-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--grid)}
+.score-bar i{display:block;height:100%}
+.score-bar i.g-right{background:var(--up)}
+.score-bar i.g-partly{background:var(--warn)}
+.score-bar i.g-wrong{background:var(--down)}
+.score .seg{justify-self:start}
+#pastCalls .note{margin:0 0 4px}
+.ev-mh{margin:28px 0 10px}
